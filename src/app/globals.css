@@ -1,0 +1,251 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@layer base {
+  :root {
+    --background: 4 47 46;
+    --foreground: 240 253 250;
+    --card: 19 78 74;
+    --card-foreground: 240 253 250;
+    --primary: 20 184 166;
+    --primary-foreground: 4 47 46;
+    --secondary: 15 118 110;
+    --secondary-foreground: 240 253 250;
+    --muted: 17 94 89;
+    --muted-foreground: 153 246 228;
+    --accent: 0 255 65;
+    --accent-foreground: 4 47 46;
+    --destructive: 239 68 68;
+    --destructive-foreground: 255 255 255;
+    --border: 15 118 110;
+    --input: 17 94 89;
+    --ring: 20 184 166;
+  }
+
+  /* Light mode variables */
+  .light-mode {
+    --background: 240 253 250;
+    --foreground: 4 47 46;
+    --card: 255 255 255;
+    --card-foreground: 4 47 46;
+    --primary: 13 148 136;
+    --primary-foreground: 255 255 255;
+    --secondary: 20 184 166;
+    --secondary-foreground: 4 47 46;
+    --muted: 240 253 250;
+    --muted-foreground: 15 118 110;
+    --accent: 0 200 50;
+    --accent-foreground: 4 47 46;
+    --border: 153 246 228;
+    --input: 204 251 241;
+    --ring: 13 148 136;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-cyber-950 text-cyber-50 font-sans;
+    background-image: 
+      linear-gradient(to right, rgba(20, 184, 166, 0.03) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(20, 184, 166, 0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Light mode body styles */
+  .light-mode body,
+  body.light-mode,
+  html.light-mode body {
+    @apply bg-cyber-50 text-cyber-950;
+    background-image: 
+      linear-gradient(to right, rgba(13, 148, 136, 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(13, 148, 136, 0.05) 1px, transparent 1px);
+  }
+
+  ::selection {
+    @apply bg-cyber-500 text-cyber-950;
+  }
+
+  .light-mode ::selection {
+    @apply bg-cyber-600 text-white;
+  }
+}
+
+/* Light mode component overrides */
+.light-mode .cyber-card {
+  @apply bg-white/90 border-cyber-200 shadow-lg shadow-cyber-500/5;
+}
+
+.light-mode .cyber-card-hover:hover {
+  @apply border-cyber-400;
+  box-shadow: 0 4px 20px rgba(13, 148, 136, 0.15);
+}
+
+.light-mode .cyber-button {
+  @apply bg-cyber-600 hover:bg-cyber-500;
+}
+
+.light-mode .cyber-input {
+  @apply bg-white border-cyber-300 text-cyber-900 placeholder-cyber-400;
+}
+
+.light-mode .cyber-input:focus {
+  @apply border-cyber-500 ring-cyber-500/30;
+}
+
+.light-mode header {
+  @apply bg-white/95 border-cyber-200;
+}
+
+.light-mode footer {
+  @apply bg-cyber-100 border-cyber-200;
+}
+
+@layer components {
+  .cyber-card {
+    @apply bg-cyber-900/80 border border-cyber-700/50 rounded-lg backdrop-blur-sm;
+    box-shadow: 0 0 20px rgba(20, 184, 166, 0.1);
+  }
+
+  .cyber-card-hover {
+    @apply cyber-card transition-all duration-300;
+  }
+
+  .cyber-card-hover:hover {
+    @apply border-cyber-500/50;
+    box-shadow: 0 0 30px rgba(20, 184, 166, 0.2);
+  }
+
+  .cyber-button {
+    @apply px-6 py-3 bg-cyber-600 hover:bg-cyber-500 text-cyber-50 font-semibold rounded-lg transition-all duration-200;
+    box-shadow: 0 0 10px rgba(20, 184, 166, 0.3);
+  }
+
+  .cyber-button:hover {
+    box-shadow: 0 0 20px rgba(20, 184, 166, 0.5);
+  }
+
+  .cyber-button-outline {
+    @apply px-6 py-3 bg-transparent border-2 border-cyber-500 text-cyber-400 hover:bg-cyber-500/10 font-semibold rounded-lg transition-all duration-200;
+  }
+
+  .cyber-input {
+    @apply w-full px-4 py-3 bg-cyber-900/50 border border-cyber-700 rounded-lg text-cyber-100 placeholder-cyber-600 focus:outline-none focus:border-cyber-500 focus:ring-1 focus:ring-cyber-500 transition-all duration-200;
+  }
+
+  .threat-badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .threat-critical {
+    @apply bg-red-500/20 text-red-400 border border-red-500/30;
+  }
+
+  .threat-high {
+    @apply bg-orange-500/20 text-orange-400 border border-orange-500/30;
+  }
+
+  .threat-medium {
+    @apply bg-yellow-500/20 text-yellow-400 border border-yellow-500/30;
+  }
+
+  .threat-low {
+    @apply bg-green-500/20 text-green-400 border border-green-500/30;
+  }
+
+  .threat-info {
+    @apply bg-blue-500/20 text-blue-400 border border-blue-500/30;
+  }
+
+  .terminal-text {
+    @apply font-mono text-matrix;
+    text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+  }
+
+  .glow-text {
+    @apply text-cyber-400;
+    text-shadow: 0 0 10px rgba(20, 184, 166, 0.5);
+  }
+
+  .scan-line {
+    @apply absolute inset-0 pointer-events-none overflow-hidden;
+  }
+
+  .scan-line::before {
+    content: '';
+    @apply absolute w-full h-px bg-gradient-to-r from-transparent via-cyber-400/50 to-transparent;
+    animation: scan-line 3s linear infinite;
+  }
+
+  .progress-bar {
+    @apply h-2 bg-cyber-800 rounded-full overflow-hidden;
+  }
+
+  .progress-bar-fill {
+    @apply h-full bg-gradient-to-r from-cyber-600 to-cyber-400 rounded-full transition-all duration-500;
+  }
+
+  .module-card {
+    @apply cyber-card-hover p-6 cursor-pointer relative overflow-hidden;
+  }
+
+  .module-card.locked {
+    @apply opacity-60 cursor-not-allowed;
+  }
+
+  .module-card.completed {
+    @apply border-green-500/50;
+  }
+
+  .score-display {
+    @apply font-mono text-4xl font-bold text-cyber-400;
+    text-shadow: 0 0 20px rgba(20, 184, 166, 0.5);
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-gradient-to-r from-cyber-400 to-matrix bg-clip-text text-transparent;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.5s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-cyber-900;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-cyber-700 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-cyber-600;
+}
