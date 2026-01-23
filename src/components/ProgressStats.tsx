@@ -1,21 +1,20 @@
 'use client';
 
-import { 
-  Trophy, 
-  Target, 
-  Flame, 
-  Star, 
-  TrendingUp,
-  BookOpen,
-  Award,
-  Zap
-} from 'lucide-react';
 import { cn, getLevelTitle, calculatePercentage } from '@/lib/utils';
 import { useProgressStore } from '@/store';
 
 interface ProgressStatsProps {
   compact?: boolean;
 }
+
+const statImages = {
+  totalScore: 'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=100&h=100&fit=crop',
+  dayStreak: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=100&h=100&fit=crop',
+  badges: 'https://images.unsplash.com/photo-1567427017947-545c5f8d16ad?w=100&h=100&fit=crop',
+  completed: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=100&h=100&fit=crop',
+  level: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=200&h=200&fit=crop',
+  streak: 'https://images.unsplash.com/photo-1533227268428-f9ed0900fb3b?w=200&h=200&fit=crop',
+};
 
 export default function ProgressStats({ compact = false }: ProgressStatsProps) {
   const { progress } = useProgressStore();
@@ -26,11 +25,15 @@ export default function ProgressStats({ compact = false }: ProgressStatsProps) {
     return (
       <div className="flex items-center space-x-4">
         <div className="flex items-center space-x-2">
-          <Zap className="h-4 w-4 text-cyber-400" />
+          <div className="w-6 h-6 rounded-full overflow-hidden">
+            <img src={statImages.level} alt="Level" className="w-full h-full object-cover" />
+          </div>
           <span className="text-sm font-medium text-cyber-200">Level {progress.level}</span>
         </div>
         <div className="flex items-center space-x-2">
-          <Flame className="h-4 w-4 text-orange-400" />
+          <div className="w-6 h-6 rounded-full overflow-hidden">
+            <img src={statImages.dayStreak} alt="Streak" className="w-full h-full object-cover" />
+          </div>
           <span className="text-sm text-cyber-300">{progress.streak} day streak</span>
         </div>
       </div>
@@ -39,48 +42,56 @@ export default function ProgressStats({ compact = false }: ProgressStatsProps) {
 
   const stats = [
     {
-      icon: Trophy,
+      image: statImages.totalScore,
       label: 'Total Score',
       value: progress.totalScore.toLocaleString(),
-      color: 'text-yellow-400',
-      bgColor: 'bg-yellow-500/20',
+      bgGradient: 'from-yellow-500/20 to-amber-500/10',
+      borderColor: 'border-yellow-500/30',
     },
     {
-      icon: Flame,
+      image: statImages.dayStreak,
       label: 'Day Streak',
       value: progress.streak,
-      color: 'text-orange-400',
-      bgColor: 'bg-orange-500/20',
+      bgGradient: 'from-orange-500/20 to-red-500/10',
+      borderColor: 'border-orange-500/30',
     },
     {
-      icon: Award,
+      image: statImages.badges,
       label: 'Badges',
       value: progress.badges.length,
-      color: 'text-purple-400',
-      bgColor: 'bg-purple-500/20',
+      bgGradient: 'from-purple-500/20 to-pink-500/10',
+      borderColor: 'border-purple-500/30',
     },
     {
-      icon: BookOpen,
+      image: statImages.completed,
       label: 'Completed',
       value: Object.values(progress.moduleProgress).filter(
         (m) => m.status === 'completed'
       ).length,
-      color: 'text-green-400',
-      bgColor: 'bg-green-500/20',
+      bgGradient: 'from-green-500/20 to-emerald-500/10',
+      borderColor: 'border-green-500/30',
     },
   ];
 
   return (
     <div className="space-y-6">
-      {/* Level Card */}
       <div className="cyber-card p-6 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-cyber-500/10 rounded-full -translate-y-1/2 translate-x-1/2" />
+        <div className="absolute inset-0 opacity-20">
+          <img 
+            src={statImages.level} 
+            alt="" 
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-br from-cyber-900 via-cyber-900/90 to-cyber-900/80" />
+        </div>
         
         <div className="relative z-10">
           <div className="flex items-start justify-between mb-4">
             <div>
               <div className="flex items-center space-x-2 mb-1">
-                <Star className="h-5 w-5 text-cyber-400" />
+                <div className="w-6 h-6 rounded-full overflow-hidden border border-cyber-600">
+                  <img src={statImages.level} alt="Level" className="w-full h-full object-cover" />
+                </div>
                 <span className="text-cyber-500 text-sm">Current Level</span>
               </div>
               <div className="text-4xl font-bold text-cyber-100">{progress.level}</div>
@@ -94,7 +105,6 @@ export default function ProgressStats({ compact = false }: ProgressStatsProps) {
             </div>
           </div>
 
-          {/* XP Progress Bar */}
           <div>
             <div className="progress-bar h-3">
               <div
@@ -110,13 +120,23 @@ export default function ProgressStats({ compact = false }: ProgressStatsProps) {
         </div>
       </div>
 
-      {/* Stats Grid */}
       <div className="grid grid-cols-2 gap-4">
         {stats.map((stat) => (
-          <div key={stat.label} className="cyber-card p-4">
+          <div 
+            key={stat.label} 
+            className={cn(
+              'cyber-card p-4 relative overflow-hidden',
+              `bg-gradient-to-br ${stat.bgGradient}`,
+              stat.borderColor
+            )}
+          >
             <div className="flex items-center space-x-3">
-              <div className={cn('p-2 rounded-lg', stat.bgColor)}>
-                <stat.icon className={cn('h-5 w-5', stat.color)} />
+              <div className="w-12 h-12 rounded-lg overflow-hidden border border-cyber-600/50 shadow-lg flex-shrink-0">
+                <img 
+                  src={stat.image} 
+                  alt={stat.label}
+                  className="w-full h-full object-cover"
+                />
               </div>
               <div>
                 <div className="text-xs text-cyber-500">{stat.label}</div>
@@ -127,11 +147,12 @@ export default function ProgressStats({ compact = false }: ProgressStatsProps) {
         ))}
       </div>
 
-      {/* Recent Badges */}
       {progress.badges.length > 0 && (
         <div className="cyber-card p-4">
           <h4 className="text-sm font-medium text-cyber-300 mb-3 flex items-center space-x-2">
-            <Award className="h-4 w-4 text-cyber-400" />
+            <div className="w-5 h-5 rounded overflow-hidden">
+              <img src={statImages.badges} alt="Badges" className="w-full h-full object-cover" />
+            </div>
             <span>Recent Badges</span>
           </h4>
           <div className="flex flex-wrap gap-2">
@@ -155,15 +176,25 @@ export default function ProgressStats({ compact = false }: ProgressStatsProps) {
         </div>
       )}
 
-      {/* Streak Motivator */}
       {progress.streak > 0 && (
-        <div className="cyber-card p-4 bg-gradient-to-r from-orange-500/10 to-red-500/10 border-orange-500/30">
-          <div className="flex items-center justify-between">
+        <div className="cyber-card p-4 relative overflow-hidden border-orange-500/30">
+          <div className="absolute inset-0 opacity-10">
+            <img 
+              src={statImages.streak} 
+              alt="" 
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <div className="absolute inset-0 bg-gradient-to-r from-orange-500/10 to-red-500/10" />
+          
+          <div className="relative z-10 flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <Flame className="h-8 w-8 text-orange-400" />
+              <div className="w-12 h-12 rounded-lg overflow-hidden border border-orange-500/30">
+                <img src={statImages.dayStreak} alt="Streak" className="w-full h-full object-cover" />
+              </div>
               <div>
                 <div className="font-semibold text-orange-300">
-                  {progress.streak} Day Streak! 🔥
+                  {progress.streak} Day Streak!
                 </div>
                 <div className="text-xs text-orange-400/70">
                   Keep it going! Train tomorrow to continue your streak.
