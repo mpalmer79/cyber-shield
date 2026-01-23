@@ -417,7 +417,12 @@ export function Confetti({ active, duration = 3000 }: ConfettiProps) {
     color: string;
     delay: number;
   }>>([]);
+  const [screenHeight, setScreenHeight] = useState(800);
   const playEffect = useSoundEffect();
+
+  useEffect(() => {
+    setScreenHeight(window.innerHeight);
+  }, []);
 
   useEffect(() => {
     if (active) {
@@ -454,7 +459,7 @@ export function Confetti({ active, duration = 3000 }: ConfettiProps) {
           }}
           initial={{ y: -20, opacity: 1, rotate: 0 }}
           animate={{
-            y: window.innerHeight + 20,
+            y: screenHeight + 20,
             opacity: [1, 1, 0],
             rotate: Math.random() * 720 - 360,
             x: (Math.random() - 0.5) * 200,
