@@ -67,10 +67,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('cybershield-theme', newTheme);
   };
 
-  if (!mounted) {
-    return <>{children}</>;
-  }
-
+  // Always provide context, even when not mounted
   return (
     <ThemeContext.Provider value={{ theme, resolvedTheme, setTheme }}>
       {children}
@@ -80,8 +77,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
 export function useTheme() {
   const context = useContext(ThemeContext);
+  // Return safe defaults during SSR instead of throwing
   if (context === undefined) {
-    throw new Error('useTheme must be used within a ThemeProvider');
+    return {
+      theme: 'dark' as Theme,
+      resolvedTheme: 'dark' as 'light' | 'dark',
+      setTheme: () => {},
+    };
   }
   return context;
 }
@@ -100,172 +102,150 @@ export default function ThemeToggle({
   const { theme, resolvedTheme, setTheme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
 
-  const themes: { value: Theme; label: string; icon: React.ElementType }[] = [
+  const toggleTheme = () => {
+    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
+  };
+
+  const themes: { value: Theme; label: string; icon: typeof Sun }[] = [
     { value: 'light', label: 'Light', icon: Sun },
     { value: 'dark', label: 'Dark', icon: Moon },
     { value: 'system', label: 'System', icon: Monitor },
   ];
 
-  const currentTheme = themes.find((t) => t.value === theme) || themes[1];
-  const Icon = resolvedTheme === 'dark' ? Moon : Sun;
-
-  // Simple icon toggle between light/dark
-  if (variant === 'icon') {
-    return (
-      <button
-        onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-        className={cn(
-          'relative flex items-center justify-center w-10 h-10 rounded-lg',
-          'bg-cyber-800/50 hover:bg-cyber-700/50 border border-cyber-700/50 hover:border-cyber-600/50',
-          'transition-all duration-300 group',
-          className
-        )}
-        aria-label={`Switch to ${resolvedTheme === 'dark' ? 'light' : 'dark'} mode`}
-      >
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={resolvedTheme}
-            initial={{ y: -20, opacity: 0, rotate: -90 }}
-            animate={{ y: 0, opacity: 1, rotate: 0 }}
-            exit={{ y: 20, opacity: 0, rotate: 90 }}
-            transition={{ duration: 0.2 }}
-          >
-            <Icon className="h-5 w-5 text-cyber-400 group-hover:text-cyber-300 transition-colors" />
-          </motion.div>
-        </AnimatePresence>
-        
-        {/* Glow effect */}
-        <motion.div
-          className={cn(
-            'absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity',
-            resolvedTheme === 'dark' 
-              ? 'bg-gradient-to-br from-indigo-500/20 to-purple-500/20' 
-              : 'bg-gradient-to-br from-yellow-500/20 to-orange-500/20'
-          )}
-        />
-      </button>
-    );
-  }
-
-  // Dropdown selector
-  if (variant === 'dropdown') {
-    return (
-      <div className={cn('relative', className)}>
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className={cn(
-            'flex items-center gap-2 px-4 py-2.5 rounded-lg',
-            'bg-cyber-800/50 hover:bg-cyber-700/50 border border-cyber-700/50',
-            'transition-all duration-200'
-          )}
-        >
-          <currentTheme.icon className="h-4 w-4 text-cyber-400" />
-          {showLabel && (
-            <span className="text-sm text-cyber-300">{currentTheme.label}</span>
-          )}
-        </button>
-
-        <AnimatePresence>
-          {isOpen && (
-            <>
-              {/* Backdrop */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 z-40"
-                onClick={() => setIsOpen(false)}
-              />
-              
-              {/* Dropdown */}
-              <motion.div
-                initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                transition={{ duration: 0.15 }}
-                className={cn(
-                  'absolute top-full right-0 mt-2 z-50',
-                  'w-40 p-1 rounded-lg',
-                  'bg-cyber-900 border border-cyber-700/50',
-                  'shadow-xl shadow-black/20'
-                )}
-              >
-                {themes.map((t) => (
-                  <button
-                    key={t.value}
-                    onClick={() => {
-                      setTheme(t.value);
-                      setIsOpen(false);
-                    }}
-                    className={cn(
-                      'w-full flex items-center gap-3 px-3 py-2 rounded-md',
-                      'text-sm transition-colors',
-                      theme === t.value
-                        ? 'bg-cyber-700/50 text-cyber-200'
-                        : 'text-cyber-400 hover:text-cyber-200 hover:bg-cyber-800/50'
-                    )}
-                  >
-                    <t.icon className="h-4 w-4" />
-                    <span>{t.label}</span>
-                    {theme === t.value && (
-                      <Sparkles className="h-3 w-3 ml-auto text-cyber-400" />
-                    )}
-                  </button>
-                ))}
-              </motion.div>
-            </>
-          )}
-        </AnimatePresence>
-      </div>
-    );
-  }
-
-  // Switch style toggle
   if (variant === 'switch') {
     return (
-      <div className={cn('flex items-center gap-3', className)}>
-        <Sun className={cn(
-          'h-4 w-4 transition-colors',
-          resolvedTheme === 'light' ? 'text-yellow-400' : 'text-cyber-600'
-        )} />
-        
+      <div className={cn('flex items-center space-x-3', className)}>
+        <Sun className="h-4 w-4 text-cyber-500" />
         <button
-          onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+          onClick={toggleTheme}
           className={cn(
-            'relative w-14 h-7 rounded-full',
-            'bg-cyber-800 border border-cyber-700/50',
-            'transition-colors duration-300',
-            resolvedTheme === 'dark' && 'bg-cyber-700'
+            'relative w-14 h-7 rounded-full transition-colors duration-300',
+            resolvedTheme === 'dark' 
+              ? 'bg-cyber-700' 
+              : 'bg-cyber-300'
           )}
+          aria-label="Toggle theme"
         >
           <motion.div
             className={cn(
-              'absolute top-1 w-5 h-5 rounded-full',
-              'bg-gradient-to-br shadow-lg',
+              'absolute top-1 w-5 h-5 rounded-full shadow-md',
               resolvedTheme === 'dark'
-                ? 'from-indigo-400 to-purple-500 shadow-indigo-500/30'
-                : 'from-yellow-400 to-orange-500 shadow-yellow-500/30'
+                ? 'bg-cyber-400'
+                : 'bg-white'
             )}
-            animate={{
-              left: resolvedTheme === 'dark' ? '32px' : '4px',
-            }}
+            animate={{ left: resolvedTheme === 'dark' ? '32px' : '4px' }}
             transition={{ type: 'spring', stiffness: 500, damping: 30 }}
           />
+          <Sparkles 
+            className={cn(
+              'absolute top-1.5 right-1.5 h-4 w-4 transition-opacity',
+              resolvedTheme === 'dark' ? 'opacity-100 text-yellow-300' : 'opacity-0'
+            )} 
+          />
         </button>
-
-        <Moon className={cn(
-          'h-4 w-4 transition-colors',
-          resolvedTheme === 'dark' ? 'text-indigo-400' : 'text-cyber-600'
-        )} />
-
+        <Moon className="h-4 w-4 text-cyber-500" />
         {showLabel && (
-          <span className="text-sm text-cyber-400 ml-2">
-            {currentTheme.label}
+          <span className="text-sm text-cyber-400 ml-2 capitalize">
+            {resolvedTheme} mode
           </span>
         )}
       </div>
     );
   }
 
-  return null;
+  if (variant === 'dropdown') {
+    return (
+      <div className={cn('relative', className)}>
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className={cn(
+            'flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors',
+            'bg-cyber-800/50 hover:bg-cyber-700/50 border border-cyber-700/50'
+          )}
+        >
+          {resolvedTheme === 'dark' ? (
+            <Moon className="h-4 w-4 text-cyber-400" />
+          ) : (
+            <Sun className="h-4 w-4 text-yellow-400" />
+          )}
+          {showLabel && (
+            <span className="text-sm text-cyber-300 capitalize">{theme}</span>
+          )}
+        </button>
+
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className={cn(
+                'absolute top-full right-0 mt-2 py-1 rounded-lg shadow-xl z-50',
+                'bg-cyber-800 border border-cyber-700'
+              )}
+            >
+              {themes.map(({ value, label, icon: Icon }) => (
+                <button
+                  key={value}
+                  onClick={() => {
+                    setTheme(value);
+                    setIsOpen(false);
+                  }}
+                  className={cn(
+                    'flex items-center space-x-3 w-full px-4 py-2 text-sm transition-colors',
+                    theme === value
+                      ? 'bg-cyber-700/50 text-cyber-200'
+                      : 'text-cyber-400 hover:bg-cyber-700/30 hover:text-cyber-300'
+                  )}
+                >
+                  <Icon className="h-4 w-4" />
+                  <span>{label}</span>
+                </button>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    );
+  }
+
+  // Default: icon variant
+  return (
+    <motion.button
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      onClick={toggleTheme}
+      className={cn(
+        'p-2 rounded-lg transition-colors',
+        'bg-cyber-800/50 hover:bg-cyber-700/50 border border-cyber-700/50',
+        'hover:shadow-lg hover:shadow-cyber-500/10',
+        className
+      )}
+      aria-label="Toggle theme"
+    >
+      <AnimatePresence mode="wait">
+        {resolvedTheme === 'dark' ? (
+          <motion.div
+            key="moon"
+            initial={{ rotate: -90, opacity: 0 }}
+            animate={{ rotate: 0, opacity: 1 }}
+            exit={{ rotate: 90, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Moon className="h-5 w-5 text-cyber-400" />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="sun"
+            initial={{ rotate: 90, opacity: 0 }}
+            animate={{ rotate: 0, opacity: 1 }}
+            exit={{ rotate: -90, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Sun className="h-5 w-5 text-yellow-400" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.button>
+  );
 }
