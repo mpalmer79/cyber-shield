@@ -44,8 +44,10 @@
     --ring: 13 148 136;
   }
 
-  * {
-    @apply border-border;
+  *,
+  *::before,
+  *::after {
+    border-color: rgb(15 118 110 / 0.2);
   }
 
   body {
