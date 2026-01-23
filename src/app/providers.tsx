@@ -5,10 +5,15 @@ import { ThemeProvider, ToastContainer, Onboarding, useOnboarding } from '@/comp
 
 function OnboardingWrapper({ children }: { children: React.ReactNode }) {
   const { showOnboarding, completeOnboarding } = useOnboarding();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <>
-      {showOnboarding && (
+      {mounted && showOnboarding && (
         <Onboarding 
           onComplete={completeOnboarding} 
           onSkip={completeOnboarding} 
@@ -26,17 +31,12 @@ export function ClientProviders({ children }: { children: React.ReactNode }) {
     setMounted(true);
   }, []);
 
-  // Prevent hydration mismatch
-  if (!mounted) {
-    return <>{children}</>;
-  }
-
   return (
     <ThemeProvider>
       <OnboardingWrapper>
         {children}
       </OnboardingWrapper>
-      <ToastContainer />
+      {mounted && <ToastContainer />}
     </ThemeProvider>
   );
 }
