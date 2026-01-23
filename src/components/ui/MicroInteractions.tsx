@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { motion, useAnimation, useMotionValue, useTransform } from 'framer-motion';
+import { motion, useAnimation } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useSettingsStore } from '@/store';
 
@@ -105,12 +105,16 @@ export function useHapticFeedback() {
 // Interactive Button with Sound & Animation
 // ============================================
 
-interface InteractiveButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface InteractiveButtonProps {
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
   size?: 'sm' | 'md' | 'lg';
   soundOnClick?: SoundEffect;
   soundOnHover?: boolean;
   children: React.ReactNode;
+  className?: string;
+  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  disabled?: boolean;
+  type?: 'button' | 'submit' | 'reset';
 }
 
 export function InteractiveButton({
@@ -122,7 +126,7 @@ export function InteractiveButton({
   className,
   onClick,
   disabled,
-  ...props
+  type = 'button',
 }: InteractiveButtonProps) {
   const playEffect = useSoundEffect();
   const { triggerHaptic } = useHapticFeedback();
@@ -164,6 +168,7 @@ export function InteractiveButton({
 
   return (
     <motion.button
+      type={type}
       animate={controls}
       whileHover={{ scale: disabled ? 1 : 1.02 }}
       whileTap={{ scale: disabled ? 1 : 0.98 }}
@@ -178,7 +183,6 @@ export function InteractiveButton({
         sizes[size],
         className
       )}
-      {...props}
     >
       {children}
     </motion.button>
