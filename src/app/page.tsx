@@ -125,16 +125,6 @@ export default function HomePage() {
 
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-3xl">
-            {/* Admin Login Link - Top Right */}
-            <div className="absolute top-0 right-0">
-              <Link
-                href="/admin"
-                className="text-sm text-cyber-500 hover:text-cyber-400 transition-colors"
-              >
-                Admin Login
-              </Link>
-            </div>
-
             {/* Badge */}
             <div className="inline-flex items-center space-x-2 px-4 py-2 bg-cyber-500/10 backdrop-blur-sm rounded-full border border-cyber-500/30 mb-8">
               <div className="w-2 h-2 bg-cyber-400 rounded-full animate-pulse" />
