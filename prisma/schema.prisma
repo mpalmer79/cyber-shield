@@ -1,0 +1,1614 @@
+// Cyber Shield Enterprise Database Schema
+// Government-Grade Cybersecurity Training Platform
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// AUTHENTICATION & USER MANAGEMENT
+// ============================================
+
+model User {
+  id                    String    @id @default(cuid())
+  email                 String    @unique
+  emailVerified         DateTime?
+  passwordHash          String?
+  firstName             String
+  lastName              String
+  displayName           String?
+  avatar                String?
+  phone                 String?
+  phoneVerified         DateTime?
+
+  // Security
+  mfaEnabled            Boolean   @default(false)
+  mfaSecret             String?
+  backupCodes           String[]
+  lastLogin             DateTime?
+  lastPasswordChange    DateTime?
+  failedLoginAttempts   Int       @default(0)
+  lockedUntil           DateTime?
+
+  // Status
+  status                UserStatus @default(PENDING_VERIFICATION)
+  role                  UserRole   @default(TRAINEE)
+  clearanceLevel        ClearanceLevel @default(UNCLASSIFIED)
+
+  // Career Progression
+  careerPath            CareerPath @default(GENERAL)
+  currentTier           CareerTier @default(NOVICE)
+  yearsExperience       Int        @default(0)
+
+  // Gamification
+  totalXP               Int        @default(0)
+  currentLevel          Int        @default(1)
+  currentStreak         Int        @default(0)
+  longestStreak         Int        @default(0)
+  lastActivityDate      DateTime?
+
+  // Organization
+  organizationId        String?
+  organization          Organization? @relation(fields: [organizationId], references: [id])
+  teamId                String?
+  team                  Team?        @relation(fields: [teamId], references: [id])
+  departmentId          String?
+  department            Department?  @relation(fields: [departmentId], references: [id])
+
+  // Relationships
+  accounts              Account[]
+  sessions              Session[]
+  badges                UserBadge[]
+  certifications        UserCertification[]
+  moduleProgress        ModuleProgress[]
+  scenarioAttempts      ScenarioAttempt[]
+  assessmentResults     AssessmentResult[]
+  labSessions           LabSession[]
+  redTeamParticipation  RedTeamExerciseParticipant[] @relation("RedTeamParticipant")
+  blueTeamParticipation BlueTeamExerciseParticipant[] @relation("BlueTeamParticipant")
+  mentorships           Mentorship[] @relation("Mentor")
+  mentees               Mentorship[] @relation("Mentee")
+  auditLogs             AuditLog[]
+  notifications         Notification[]
+  skillAssessments      SkillAssessment[]
+  learningPaths         UserLearningPath[]
+  examAttempts          ExamAttempt[]
+  threatReports         ThreatReport[]
+  comments              Comment[]
+
+  // Timestamps
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  deletedAt             DateTime?
+
+  @@index([email])
+  @@index([organizationId])
+  @@index([status])
+  @@index([role])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  ipAddress    String?
+  userAgent    String?
+  deviceType   String?
+  location     String?
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+  type       TokenType @default(EMAIL_VERIFICATION)
+
+  @@unique([identifier, token])
+}
+
+// ============================================
+// ORGANIZATION & TEAM MANAGEMENT
+// ============================================
+
+model Organization {
+  id                String   @id @default(cuid())
+  name              String
+  slug              String   @unique
+  description       String?
+  logo              String?
+  website           String?
+  industry          Industry @default(GOVERNMENT)
+  size              OrgSize  @default(LARGE)
+
+  // Contact
+  contactEmail      String?
+  contactPhone      String?
+  address           String?
+  city              String?
+  state             String?
+  country           String   @default("USA")
+  postalCode        String?
+
+  // Settings
+  settings          Json     @default("{}")
+  complianceFrameworks String[]
+
+  // Subscription
+  subscriptionTier  SubscriptionTier @default(ENTERPRISE)
+  subscriptionStart DateTime?
+  subscriptionEnd   DateTime?
+  maxUsers          Int      @default(1000)
+
+  // Relationships
+  users             User[]
+  teams             Team[]
+  departments       Department[]
+  customModules     TrainingModule[]
+  learningPaths     LearningPath[]
+  redTeamExercises  RedTeamExercise[]
+  blueTeamExercises BlueTeamExercise[]
+  threatIntelFeeds  ThreatIntelFeed[]
+  complianceReports ComplianceReport[]
+  auditLogs         AuditLog[]
+
+  // Timestamps
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([slug])
+}
+
+model Department {
+  id              String       @id @default(cuid())
+  name            String
+  description     String?
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  managerId       String?
+
+  // Relationships
+  users           User[]
+  teams           Team[]
+
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([organizationId])
+}
+
+model Team {
+  id              String       @id @default(cuid())
+  name            String
+  description     String?
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  departmentId    String?
+  department      Department?  @relation(fields: [departmentId], references: [id])
+  leaderId        String?
+
+  // Team Type
+  teamType        TeamType     @default(GENERAL)
+
+  // Relationships
+  users           User[]
+
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([organizationId])
+  @@index([departmentId])
+}
+
+// ============================================
+// TRAINING MODULES & CONTENT
+// ============================================
+
+model TrainingModule {
+  id                String        @id @default(cuid())
+  slug              String        @unique
+  title             String
+  description       String
+  longDescription   String?       @db.Text
+  icon              String?
+  coverImage        String?
+
+  // Classification
+  moduleType        ModuleType
+  category          ModuleCategory
+  difficulty        DifficultyLevel
+  clearanceRequired ClearanceLevel @default(UNCLASSIFIED)
+
+  // Requirements
+  prerequisites     String[]
+  estimatedDuration Int           // minutes
+  passingScore      Int           @default(70)
+  maxAttempts       Int?
+
+  // Content
+  learningObjectives String[]
+  tags              String[]
+  version           String        @default("1.0.0")
+
+  // Status
+  status            ContentStatus @default(DRAFT)
+  publishedAt       DateTime?
+
+  // Organization (null = system module)
+  organizationId    String?
+  organization      Organization? @relation(fields: [organizationId], references: [id])
+
+  // Relationships
+  scenarios         Scenario[]
+  progress          ModuleProgress[]
+  learningPathModules LearningPathModule[]
+
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@index([moduleType])
+  @@index([category])
+  @@index([difficulty])
+  @@index([status])
+}
+
+model Scenario {
+  id                String        @id @default(cuid())
+  moduleId          String
+  module            TrainingModule @relation(fields: [moduleId], references: [id])
+
+  // Scenario Details
+  title             String
+  description       String?
+  scenarioType      ScenarioType
+  difficulty        DifficultyLevel
+
+  // Content (JSON for flexibility)
+  content           Json
+  correctAnswer     Json?
+  redFlags          String[]
+  explanation       String        @db.Text
+  hints             String[]
+
+  // Scoring
+  maxPoints         Int           @default(100)
+  timeLimit         Int?          // seconds
+
+  // Metadata
+  tags              String[]
+  order             Int           @default(0)
+  status            ContentStatus @default(ACTIVE)
+
+  // AI Generation
+  isAIGenerated     Boolean       @default(false)
+  aiPromptUsed      String?       @db.Text
+
+  // Relationships
+  attempts          ScenarioAttempt[]
+
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@index([moduleId])
+  @@index([scenarioType])
+}
+
+model ModuleProgress {
+  id              String         @id @default(cuid())
+  userId          String
+  user            User           @relation(fields: [userId], references: [id])
+  moduleId        String
+  module          TrainingModule @relation(fields: [moduleId], references: [id])
+
+  // Progress
+  status          ProgressStatus @default(NOT_STARTED)
+  percentComplete Float          @default(0)
+  currentScenario Int            @default(0)
+
+  // Scores
+  bestScore       Int            @default(0)
+  averageScore    Float          @default(0)
+  totalAttempts   Int            @default(0)
+
+  // Time Tracking
+  totalTimeSpent  Int            @default(0) // seconds
+  startedAt       DateTime?
+  lastAttemptAt   DateTime?
+  completedAt     DateTime?
+
+  // XP earned from this module
+  xpEarned        Int            @default(0)
+
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@unique([userId, moduleId])
+  @@index([userId])
+  @@index([moduleId])
+  @@index([status])
+}
+
+model ScenarioAttempt {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+  scenarioId      String
+  scenario        Scenario  @relation(fields: [scenarioId], references: [id])
+
+  // Attempt Details
+  userAnswer      Json
+  isCorrect       Boolean
+  score           Int
+  timeSpent       Int       // seconds
+
+  // AI Analysis
+  aiAnalysis      String?   @db.Text
+  identifiedFlags String[]
+  missedFlags     String[]
+
+  // Feedback
+  feedback        String?   @db.Text
+
+  createdAt       DateTime  @default(now())
+
+  @@index([userId])
+  @@index([scenarioId])
+}
+
+// ============================================
+// CAREER PROGRESSION & LEARNING PATHS
+// ============================================
+
+model LearningPath {
+  id                String       @id @default(cuid())
+  slug              String       @unique
+  title             String
+  description       String
+  longDescription   String?      @db.Text
+  icon              String?
+  coverImage        String?
+
+  // Classification
+  careerPath        CareerPath
+  targetTier        CareerTier
+  clearanceRequired ClearanceLevel @default(UNCLASSIFIED)
+
+  // Requirements
+  estimatedWeeks    Int
+  prerequisites     String[]
+
+  // Status
+  status            ContentStatus @default(DRAFT)
+  publishedAt       DateTime?
+
+  // Organization (null = system path)
+  organizationId    String?
+  organization      Organization? @relation(fields: [organizationId], references: [id])
+
+  // Relationships
+  modules           LearningPathModule[]
+  userPaths         UserLearningPath[]
+
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  @@index([careerPath])
+  @@index([targetTier])
+}
+
+model LearningPathModule {
+  id              String         @id @default(cuid())
+  learningPathId  String
+  learningPath    LearningPath   @relation(fields: [learningPathId], references: [id])
+  moduleId        String
+  module          TrainingModule @relation(fields: [moduleId], references: [id])
+
+  order           Int
+  isRequired      Boolean        @default(true)
+
+  @@unique([learningPathId, moduleId])
+  @@index([learningPathId])
+}
+
+model UserLearningPath {
+  id              String       @id @default(cuid())
+  userId          String
+  user            User         @relation(fields: [userId], references: [id])
+  learningPathId  String
+  learningPath    LearningPath @relation(fields: [learningPathId], references: [id])
+
+  // Progress
+  status          ProgressStatus @default(NOT_STARTED)
+  percentComplete Float          @default(0)
+  startedAt       DateTime?
+  completedAt     DateTime?
+
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@unique([userId, learningPathId])
+  @@index([userId])
+}
+
+// ============================================
+// CERTIFICATIONS & EXAMINATIONS
+// ============================================
+
+model Certification {
+  id                String       @id @default(cuid())
+  slug              String       @unique
+  name              String
+  description       String
+  longDescription   String?      @db.Text
+  icon              String?
+  badge             String?
+
+  // Classification
+  level             CertificationLevel
+  careerPath        CareerPath?
+  clearanceRequired ClearanceLevel @default(UNCLASSIFIED)
+
+  // Requirements
+  prerequisites     String[]
+  requiredModules   String[]
+  requiredScore     Int          @default(80)
+
+  // Validity
+  validityPeriod    Int?         // months
+  renewalRequired   Boolean      @default(true)
+
+  // Status
+  status            ContentStatus @default(ACTIVE)
+  accreditedBy      String?
+
+  // Relationships
+  exams             Exam[]
+  userCertifications UserCertification[]
+
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  @@index([level])
+  @@index([careerPath])
+}
+
+model Exam {
+  id                String        @id @default(cuid())
+  certificationId   String
+  certification     Certification @relation(fields: [certificationId], references: [id])
+
+  title             String
+  description       String?
+  version           String        @default("1.0.0")
+
+  // Exam Settings
+  totalQuestions    Int
+  passingScore      Int           @default(80)
+  timeLimit         Int           // minutes
+  maxAttempts       Int           @default(3)
+  randomizeQuestions Boolean      @default(true)
+
+  // Questions (JSON for flexibility)
+  questionPool      Json
+
+  // Status
+  status            ContentStatus @default(ACTIVE)
+
+  // Relationships
+  attempts          ExamAttempt[]
+
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@index([certificationId])
+}
+
+model ExamAttempt {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+  examId          String
+  exam            Exam      @relation(fields: [examId], references: [id])
+
+  // Attempt Details
+  answers         Json
+  score           Int
+  passed          Boolean
+  timeSpent       Int       // seconds
+
+  // Proctoring
+  proctoringData  Json?
+  flagged         Boolean   @default(false)
+  flagReason      String?
+
+  startedAt       DateTime
+  completedAt     DateTime?
+
+  createdAt       DateTime  @default(now())
+
+  @@index([userId])
+  @@index([examId])
+}
+
+model UserCertification {
+  id              String        @id @default(cuid())
+  userId          String
+  user            User          @relation(fields: [userId], references: [id])
+  certificationId String
+  certification   Certification @relation(fields: [certificationId], references: [id])
+
+  // Status
+  status          CertStatus    @default(ACTIVE)
+  certificateNumber String      @unique @default(cuid())
+
+  // Dates
+  earnedAt        DateTime
+  expiresAt       DateTime?
+  renewedAt       DateTime?
+
+  // Verification
+  verificationUrl String?
+  digitalBadge    String?
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@unique([userId, certificationId])
+  @@index([userId])
+  @@index([status])
+}
+
+// ============================================
+// SKILL ASSESSMENT & GAP ANALYSIS
+// ============================================
+
+model SkillCategory {
+  id              String    @id @default(cuid())
+  name            String    @unique
+  description     String?
+  parentId        String?
+  parent          SkillCategory? @relation("SkillHierarchy", fields: [parentId], references: [id])
+  children        SkillCategory[] @relation("SkillHierarchy")
+
+  // Relationships
+  skills          Skill[]
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model Skill {
+  id              String        @id @default(cuid())
+  name            String
+  description     String?
+  categoryId      String
+  category        SkillCategory @relation(fields: [categoryId], references: [id])
+
+  // NICE Framework Alignment
+  niceKsaId       String?
+  niceWorkRole    String?
+
+  // Skill Levels
+  noviceDesc      String?
+  intermediateDesc String?
+  advancedDesc    String?
+  expertDesc      String?
+
+  // Relationships
+  assessments     SkillAssessment[]
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@unique([name, categoryId])
+  @@index([categoryId])
+}
+
+model SkillAssessment {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+  skillId         String
+  skill           Skill     @relation(fields: [skillId], references: [id])
+
+  // Assessment
+  currentLevel    SkillLevel
+  targetLevel     SkillLevel?
+  confidence      Float     @default(0) // 0-1
+
+  // Evidence
+  assessmentType  AssessmentType
+  assessmentData  Json?
+
+  assessedAt      DateTime  @default(now())
+  nextAssessment  DateTime?
+
+  @@index([userId])
+  @@index([skillId])
+}
+
+model AssessmentResult {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+
+  // Assessment Details
+  assessmentType  String
+  category        String
+
+  // Results
+  overallScore    Float
+  breakdown       Json
+  recommendations Json
+
+  // Gap Analysis
+  gaps            Json
+  strengths       Json
+
+  completedAt     DateTime  @default(now())
+
+  @@index([userId])
+}
+
+// ============================================
+// RED TEAM / BLUE TEAM EXERCISES
+// ============================================
+
+model RedTeamExercise {
+  id                String       @id @default(cuid())
+  organizationId    String
+  organization      Organization @relation(fields: [organizationId], references: [id])
+
+  name              String
+  description       String       @db.Text
+  scenario          String       @db.Text
+
+  // Exercise Settings
+  exerciseType      ExerciseType
+  difficulty        DifficultyLevel
+  clearanceRequired ClearanceLevel @default(CONFIDENTIAL)
+
+  // Timing
+  scheduledStart    DateTime
+  scheduledEnd      DateTime
+  actualStart       DateTime?
+  actualEnd         DateTime?
+
+  // Objectives
+  objectives        Json
+  rules             Json
+
+  // Status
+  status            ExerciseStatus @default(PLANNED)
+
+  // Results
+  results           Json?
+  lessonsLearned    String?      @db.Text
+
+  // Relationships
+  participants      RedTeamExerciseParticipant[]
+
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  @@index([organizationId])
+  @@index([status])
+}
+
+model RedTeamExerciseParticipant {
+  id              String          @id @default(cuid())
+  exerciseId      String
+  exercise        RedTeamExercise @relation(fields: [exerciseId], references: [id])
+  userId          String
+  user            User            @relation("RedTeamParticipant", fields: [userId], references: [id])
+
+  role            ExerciseRole
+  team            String          // "red" or "observer"
+
+  // Performance
+  score           Int?
+  actions         Json?
+  feedback        String?         @db.Text
+
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@unique([exerciseId, userId])
+  @@index([exerciseId])
+  @@index([userId])
+}
+
+model BlueTeamExercise {
+  id                String       @id @default(cuid())
+  organizationId    String
+  organization      Organization @relation(fields: [organizationId], references: [id])
+
+  name              String
+  description       String       @db.Text
+  scenario          String       @db.Text
+
+  // Exercise Settings
+  exerciseType      ExerciseType
+  difficulty        DifficultyLevel
+  clearanceRequired ClearanceLevel @default(CONFIDENTIAL)
+
+  // Timing
+  scheduledStart    DateTime
+  scheduledEnd      DateTime
+  actualStart       DateTime?
+  actualEnd         DateTime?
+
+  // Objectives
+  objectives        Json
+  attackVectors     Json
+  defenseGoals      Json
+
+  // Status
+  status            ExerciseStatus @default(PLANNED)
+
+  // Results
+  results           Json?
+  lessonsLearned    String?      @db.Text
+
+  // Relationships
+  participants      BlueTeamExerciseParticipant[]
+
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  @@index([organizationId])
+  @@index([status])
+}
+
+model BlueTeamExerciseParticipant {
+  id              String           @id @default(cuid())
+  exerciseId      String
+  exercise        BlueTeamExercise @relation(fields: [exerciseId], references: [id])
+  userId          String
+  user            User             @relation("BlueTeamParticipant", fields: [userId], references: [id])
+
+  role            ExerciseRole
+  team            String           // "blue" or "observer"
+
+  // Performance
+  score           Int?
+  actions         Json?
+  feedback        String?          @db.Text
+
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@unique([exerciseId, userId])
+  @@index([exerciseId])
+  @@index([userId])
+}
+
+// ============================================
+// LAB ENVIRONMENTS
+// ============================================
+
+model LabEnvironment {
+  id              String    @id @default(cuid())
+  name            String
+  description     String    @db.Text
+
+  // Environment Details
+  environmentType LabType
+  difficulty      DifficultyLevel
+
+  // Resources
+  dockerCompose   String?   @db.Text
+  terraformConfig String?   @db.Text
+  setupInstructions String? @db.Text
+
+  // Limits
+  maxConcurrentUsers Int    @default(10)
+  sessionTimeout     Int    @default(120) // minutes
+
+  // Status
+  status          ContentStatus @default(ACTIVE)
+
+  // Relationships
+  sessions        LabSession[]
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([environmentType])
+}
+
+model LabSession {
+  id              String         @id @default(cuid())
+  userId          String
+  user            User           @relation(fields: [userId], references: [id])
+  labId           String
+  lab             LabEnvironment @relation(fields: [labId], references: [id])
+
+  // Session Details
+  instanceId      String?
+  accessUrl       String?
+  credentials     Json?
+
+  // Status
+  status          LabSessionStatus @default(PENDING)
+
+  // Timing
+  startedAt       DateTime?
+  lastActivityAt  DateTime?
+  terminatedAt    DateTime?
+
+  // Results
+  objectivesCompleted Json?
+  score              Int?
+  feedback           String?     @db.Text
+
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([userId])
+  @@index([labId])
+  @@index([status])
+}
+
+// ============================================
+// THREAT INTELLIGENCE
+// ============================================
+
+model ThreatIntelFeed {
+  id              String       @id @default(cuid())
+  organizationId  String?
+  organization    Organization? @relation(fields: [organizationId], references: [id])
+
+  name            String
+  description     String?
+  sourceUrl       String?
+  feedType        ThreatFeedType
+
+  // Settings
+  isActive        Boolean      @default(true)
+  refreshInterval Int          @default(3600) // seconds
+  lastRefresh     DateTime?
+
+  // Authentication
+  apiKey          String?
+  authConfig      Json?
+
+  // Relationships
+  indicators      ThreatIndicator[]
+
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([organizationId])
+  @@index([feedType])
+}
+
+model ThreatIndicator {
+  id              String          @id @default(cuid())
+  feedId          String
+  feed            ThreatIntelFeed @relation(fields: [feedId], references: [id])
+
+  // Indicator Details
+  indicatorType   IndicatorType
+  value           String
+
+  // Context
+  threatType      String?
+  confidence      Float           @default(0)
+  severity        ThreatSeverity  @default(MEDIUM)
+
+  // Metadata
+  firstSeen       DateTime
+  lastSeen        DateTime
+  expiresAt       DateTime?
+
+  // Additional Context
+  tags            String[]
+  description     String?         @db.Text
+  relatedCampaign String?
+
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([feedId])
+  @@index([indicatorType])
+  @@index([severity])
+}
+
+model ThreatReport {
+  id              String    @id @default(cuid())
+  authorId        String
+  author          User      @relation(fields: [authorId], references: [id])
+
+  title           String
+  summary         String    @db.Text
+  content         String    @db.Text
+
+  // Classification
+  reportType      ReportType
+  severity        ThreatSeverity
+  tlpLevel        TLPLevel  @default(AMBER)
+
+  // Metadata
+  tags            String[]
+  affectedSystems String[]
+  indicators      Json?
+
+  // Status
+  status          ReportStatus @default(DRAFT)
+  publishedAt     DateTime?
+
+  // Review
+  reviewedBy      String?
+  reviewedAt      DateTime?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([authorId])
+  @@index([reportType])
+  @@index([status])
+}
+
+// ============================================
+// MENTORSHIP & COLLABORATION
+// ============================================
+
+model Mentorship {
+  id              String    @id @default(cuid())
+  mentorId        String
+  mentor          User      @relation("Mentor", fields: [mentorId], references: [id])
+  menteeId        String
+  mentee          User      @relation("Mentee", fields: [menteeId], references: [id])
+
+  // Status
+  status          MentorshipStatus @default(PENDING)
+
+  // Details
+  focusAreas      String[]
+  goals           Json?
+  meetingSchedule String?
+
+  // Progress
+  notes           Json?
+  milestones      Json?
+
+  startedAt       DateTime?
+  endedAt         DateTime?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([mentorId, menteeId])
+  @@index([mentorId])
+  @@index([menteeId])
+  @@index([status])
+}
+
+model Comment {
+  id              String    @id @default(cuid())
+  authorId        String
+  author          User      @relation(fields: [authorId], references: [id])
+
+  // Polymorphic Reference
+  entityType      String
+  entityId        String
+
+  content         String    @db.Text
+
+  // Threading
+  parentId        String?
+  parent          Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies         Comment[] @relation("CommentReplies")
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([authorId])
+  @@index([entityType, entityId])
+  @@index([parentId])
+}
+
+// ============================================
+// GAMIFICATION
+// ============================================
+
+model Badge {
+  id              String    @id @default(cuid())
+  slug            String    @unique
+  name            String
+  description     String
+  icon            String
+
+  // Classification
+  rarity          BadgeRarity
+  category        BadgeCategory
+
+  // Requirements
+  requirements    Json
+  xpReward        Int       @default(0)
+
+  // Status
+  isActive        Boolean   @default(true)
+  isSecret        Boolean   @default(false)
+
+  // Relationships
+  userBadges      UserBadge[]
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([category])
+  @@index([rarity])
+}
+
+model UserBadge {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+  badgeId         String
+  badge           Badge     @relation(fields: [badgeId], references: [id])
+
+  earnedAt        DateTime  @default(now())
+  progress        Float     @default(1) // 1 = complete
+
+  @@unique([userId, badgeId])
+  @@index([userId])
+  @@index([badgeId])
+}
+
+model Leaderboard {
+  id              String    @id @default(cuid())
+  name            String
+  description     String?
+
+  // Scope
+  scope           LeaderboardScope
+  organizationId  String?
+  teamId          String?
+
+  // Time Period
+  periodType      PeriodType
+  periodStart     DateTime
+  periodEnd       DateTime?
+
+  // Rankings (JSON for flexibility)
+  rankings        Json
+
+  // Status
+  isActive        Boolean   @default(true)
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([scope])
+  @@index([periodType])
+}
+
+// ============================================
+// AUDIT & COMPLIANCE
+// ============================================
+
+model AuditLog {
+  id              String       @id @default(cuid())
+  userId          String?
+  user            User?        @relation(fields: [userId], references: [id])
+  organizationId  String?
+  organization    Organization? @relation(fields: [organizationId], references: [id])
+
+  // Event Details
+  action          AuditAction
+  entityType      String
+  entityId        String?
+
+  // Context
+  description     String
+  metadata        Json?
+
+  // Request Info
+  ipAddress       String?
+  userAgent       String?
+  requestId       String?
+
+  // Result
+  status          AuditStatus
+  errorMessage    String?
+
+  createdAt       DateTime     @default(now())
+
+  @@index([userId])
+  @@index([organizationId])
+  @@index([action])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+model ComplianceReport {
+  id              String       @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+
+  // Report Details
+  reportType      ComplianceType
+  framework       String
+  period          String
+
+  // Content
+  summary         String       @db.Text
+  findings        Json
+  recommendations Json
+
+  // Status
+  status          ReportStatus @default(DRAFT)
+
+  // Review
+  reviewedBy      String?
+  approvedAt      DateTime?
+
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([organizationId])
+  @@index([reportType])
+}
+
+// ============================================
+// NOTIFICATIONS
+// ============================================
+
+model Notification {
+  id              String           @id @default(cuid())
+  userId          String
+  user            User             @relation(fields: [userId], references: [id])
+
+  // Notification Details
+  type            NotificationType
+  title           String
+  message         String
+
+  // Action
+  actionUrl       String?
+  actionLabel     String?
+
+  // Status
+  isRead          Boolean          @default(false)
+  readAt          DateTime?
+
+  // Priority
+  priority        NotificationPriority @default(NORMAL)
+
+  expiresAt       DateTime?
+
+  createdAt       DateTime         @default(now())
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([type])
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum UserStatus {
+  PENDING_VERIFICATION
+  ACTIVE
+  SUSPENDED
+  DEACTIVATED
+  LOCKED
+}
+
+enum UserRole {
+  TRAINEE
+  ANALYST
+  SENIOR_ANALYST
+  TEAM_LEAD
+  MANAGER
+  INSTRUCTOR
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum ClearanceLevel {
+  UNCLASSIFIED
+  CONFIDENTIAL
+  SECRET
+  TOP_SECRET
+  TOP_SECRET_SCI
+}
+
+enum CareerPath {
+  GENERAL
+  SOC_ANALYST
+  THREAT_HUNTER
+  INCIDENT_RESPONDER
+  PENETRATION_TESTER
+  MALWARE_ANALYST
+  FORENSICS_ANALYST
+  SECURITY_ENGINEER
+  SECURITY_ARCHITECT
+  CISO_TRACK
+}
+
+enum CareerTier {
+  NOVICE
+  APPRENTICE
+  PRACTITIONER
+  PROFESSIONAL
+  EXPERT
+  MASTER
+  PRINCIPAL
+}
+
+enum TokenType {
+  EMAIL_VERIFICATION
+  PASSWORD_RESET
+  MFA_SETUP
+  ACCOUNT_RECOVERY
+}
+
+enum Industry {
+  GOVERNMENT
+  DEFENSE
+  INTELLIGENCE
+  FINANCIAL
+  HEALTHCARE
+  TECHNOLOGY
+  ENERGY
+  TELECOMMUNICATIONS
+  EDUCATION
+  OTHER
+}
+
+enum OrgSize {
+  SMALL
+  MEDIUM
+  LARGE
+  ENTERPRISE
+  GOVERNMENT
+}
+
+enum SubscriptionTier {
+  FREE
+  PROFESSIONAL
+  ENTERPRISE
+  GOVERNMENT
+  CUSTOM
+}
+
+enum TeamType {
+  GENERAL
+  SOC
+  THREAT_INTEL
+  INCIDENT_RESPONSE
+  RED_TEAM
+  BLUE_TEAM
+  PURPLE_TEAM
+  FORENSICS
+  VULNERABILITY_MGMT
+}
+
+enum ModuleType {
+  PHISHING_DETECTION
+  SOCIAL_ENGINEERING
+  INCIDENT_RESPONSE
+  THREAT_HUNTING
+  MALWARE_ANALYSIS
+  NETWORK_SECURITY
+  CLOUD_SECURITY
+  APPLICATION_SECURITY
+  CRYPTOGRAPHY
+  FORENSICS
+  COMPLIANCE
+  GOVERNANCE
+  PHYSICAL_SECURITY
+  OSINT
+  REVERSE_ENGINEERING
+}
+
+enum ModuleCategory {
+  AWARENESS
+  TECHNICAL
+  MANAGEMENT
+  COMPLIANCE
+  SPECIALIZED
+}
+
+enum DifficultyLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+  MASTER
+}
+
+enum ContentStatus {
+  DRAFT
+  REVIEW
+  ACTIVE
+  ARCHIVED
+  DEPRECATED
+}
+
+enum ScenarioType {
+  EMAIL_PHISHING
+  SMS_PHISHING
+  VOICE_PHISHING
+  URL_ANALYSIS
+  SOCIAL_ENGINEERING
+  INCIDENT_TIMELINE
+  DECISION_TREE
+  LOG_ANALYSIS
+  PACKET_CAPTURE
+  MALWARE_SAMPLE
+  CODE_REVIEW
+  CONFIGURATION_AUDIT
+  FORENSICS_INVESTIGATION
+  CTF_CHALLENGE
+}
+
+enum ProgressStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+  EXPIRED
+}
+
+enum CertificationLevel {
+  FOUNDATIONAL
+  ASSOCIATE
+  PROFESSIONAL
+  EXPERT
+  MASTER
+}
+
+enum CertStatus {
+  ACTIVE
+  EXPIRED
+  REVOKED
+  SUSPENDED
+}
+
+enum SkillLevel {
+  NONE
+  NOVICE
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+enum AssessmentType {
+  SELF_ASSESSMENT
+  MANAGER_ASSESSMENT
+  PEER_ASSESSMENT
+  AUTOMATED
+  PRACTICAL_EXAM
+}
+
+enum ExerciseType {
+  TABLETOP
+  LIVE_FIRE
+  SIMULATION
+  CTF
+  PURPLE_TEAM
+}
+
+enum ExerciseStatus {
+  PLANNED
+  SETUP
+  IN_PROGRESS
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
+enum ExerciseRole {
+  PARTICIPANT
+  TEAM_LEAD
+  OBSERVER
+  FACILITATOR
+  EVALUATOR
+}
+
+enum LabType {
+  NETWORK
+  WEB_APPLICATION
+  MALWARE_ANALYSIS
+  FORENSICS
+  CLOUD
+  CONTAINER
+  IOT
+  SCADA
+  MOBILE
+}
+
+enum LabSessionStatus {
+  PENDING
+  PROVISIONING
+  ACTIVE
+  PAUSED
+  TERMINATED
+  FAILED
+}
+
+enum ThreatFeedType {
+  OPEN_SOURCE
+  COMMERCIAL
+  GOVERNMENT
+  ISAC
+  INTERNAL
+}
+
+enum IndicatorType {
+  IP_ADDRESS
+  DOMAIN
+  URL
+  FILE_HASH
+  EMAIL
+  CVE
+  YARA_RULE
+  SIGMA_RULE
+  TTP
+}
+
+enum ThreatSeverity {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+  INFORMATIONAL
+}
+
+enum ReportType {
+  THREAT_ASSESSMENT
+  INCIDENT_REPORT
+  VULNERABILITY_REPORT
+  INTELLIGENCE_BRIEF
+  TREND_ANALYSIS
+}
+
+enum TLPLevel {
+  RED
+  AMBER
+  GREEN
+  WHITE
+}
+
+enum ReportStatus {
+  DRAFT
+  REVIEW
+  PUBLISHED
+  ARCHIVED
+}
+
+enum MentorshipStatus {
+  PENDING
+  ACTIVE
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
+enum BadgeRarity {
+  COMMON
+  UNCOMMON
+  RARE
+  EPIC
+  LEGENDARY
+  MYTHIC
+}
+
+enum BadgeCategory {
+  ACHIEVEMENT
+  SKILL
+  CERTIFICATION
+  PARTICIPATION
+  SPECIAL
+  STREAK
+}
+
+enum LeaderboardScope {
+  GLOBAL
+  ORGANIZATION
+  TEAM
+  MODULE
+  CERTIFICATION
+}
+
+enum PeriodType {
+  DAILY
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
+  ALL_TIME
+}
+
+enum AuditAction {
+  CREATE
+  READ
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  EXPORT
+  IMPORT
+  GRANT_ACCESS
+  REVOKE_ACCESS
+  PASSWORD_CHANGE
+  MFA_ENABLE
+  MFA_DISABLE
+  CERTIFICATION_EARNED
+  EXAM_STARTED
+  EXAM_COMPLETED
+  LAB_STARTED
+  LAB_COMPLETED
+  EXERCISE_STARTED
+  EXERCISE_COMPLETED
+}
+
+enum AuditStatus {
+  SUCCESS
+  FAILURE
+  PARTIAL
+}
+
+enum ComplianceType {
+  NIST
+  ISO_27001
+  SOC_2
+  GDPR
+  HIPAA
+  PCI_DSS
+  FEDRAMP
+  CMMC
+  NICE
+}
+
+enum NotificationType {
+  ACHIEVEMENT
+  CERTIFICATION
+  MODULE_COMPLETE
+  EXERCISE_INVITATION
+  MENTORSHIP_REQUEST
+  SYSTEM_ALERT
+  REMINDER
+  ANNOUNCEMENT
+}
+
+enum NotificationPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
