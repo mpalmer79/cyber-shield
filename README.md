@@ -10,7 +10,7 @@ AI-powered cybersecurity training platform that transforms employees into your s
 
 ![CyberShield Hero](https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=1200&q=80)
 
-## ✨ Features
+## ✨ Features 
 
 - **AI-Powered Training** — Claude AI generates dynamic, realistic scenarios that adapt to user skill level
 - **8 Training Modules** — Comprehensive coverage from phishing detection to advanced threat hunting
