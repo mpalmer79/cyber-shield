@@ -47,32 +47,42 @@ export default function Header({ currentPage = 'dashboard' }: HeaderProps) {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-cyber-700/50 bg-cyber-950/95 backdrop-blur supports-[backdrop-filter]:bg-cyber-950/80">
       <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center justify-between">
-          {/* Logo + GitHub Badge */}
-          <div className="flex items-center space-x-4">
+        <div className="flex h-16 items-center">
+          {/* Left Section: Logo + Centered GitHub Badge */}
+          <div className="hidden md:flex items-center flex-1">
             <Link href="/" className="flex items-center space-x-2 group">
               <div className="relative">
                 <Shield className="h-8 w-8 text-cyber-400 transition-all duration-300 group-hover:text-cyber-300" />
                 <div className="absolute inset-0 blur-sm bg-cyber-400/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               </div>
-              <span className="text-xl font-bold text-cyber-100 hidden sm:block">
+              <span className="text-xl font-bold text-cyber-100">
                 Cyber<span className="text-cyber-400">Shield</span>
               </span>
             </Link>
-
-            {/* GitHub Badge */}
-            <a
-              href="https://github.com/mpalmer79/cyber-shield"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden sm:flex items-center space-x-2 px-4 py-2 bg-white hover:bg-gray-100 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 group"
-            >
-              <Github className="h-5 w-5 text-gray-800 group-hover:text-black" />
-              <span className="text-sm font-semibold text-gray-800 group-hover:text-black">GitHub</span>
-            </a>
+            
+            {/* GitHub Badge - Centered in left section */}
+            <div className="flex-1 flex justify-center">
+              <a
+                href="https://github.com/mpalmer79/cyber-shield"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center space-x-2 px-4 py-2 bg-white hover:bg-gray-100 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 group"
+              >
+                <Github className="h-5 w-5 text-gray-800 group-hover:text-black" />
+                <span className="text-sm font-semibold text-gray-800 group-hover:text-black">GitHub</span>
+              </a>
+            </div>
           </div>
 
-          {/* Desktop Navigation */}
+          {/* Mobile Logo */}
+          <Link href="/" className="flex md:hidden items-center space-x-2 group">
+            <Shield className="h-8 w-8 text-cyber-400" />
+            <span className="text-xl font-bold text-cyber-100 hidden sm:block">
+              Cyber<span className="text-cyber-400">Shield</span>
+            </span>
+          </Link>
+
+          {/* Desktop Navigation - Center */}
           <nav className="hidden md:flex items-center space-x-1">
             {navItems.map((item) => (
               <Link
@@ -91,21 +101,23 @@ export default function Header({ currentPage = 'dashboard' }: HeaderProps) {
             ))}
           </nav>
 
-          {/* User Stats & Profile */}
-          <div className="flex items-center space-x-3">
-            {/* LinkedIn Badge */}
-            <a
-              href="https://www.linkedin.com/in/mpalmer1234/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden sm:flex items-center space-x-2 px-4 py-2 bg-white hover:bg-gray-100 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 group"
-            >
-              <LinkedInIcon className="h-5 w-5 text-[#0A66C2]" />
-              <span className="text-sm font-semibold text-[#0A66C2]">LinkedIn</span>
-            </a>
+          {/* Right Section: Centered LinkedIn Badge + Stats */}
+          <div className="hidden md:flex items-center flex-1">
+            {/* LinkedIn Badge - Centered in right section */}
+            <div className="flex-1 flex justify-center">
+              <a
+                href="https://www.linkedin.com/in/mpalmer1234/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center space-x-2 px-4 py-2 bg-white hover:bg-gray-100 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 group"
+              >
+                <LinkedInIcon className="h-5 w-5 text-[#0A66C2]" />
+                <span className="text-sm font-semibold text-[#0A66C2]">LinkedIn</span>
+              </a>
+            </div>
 
             {/* XP Badge */}
-            <div className="hidden sm:flex items-center space-x-2 px-3 py-1.5 bg-cyber-800/50 rounded-full border border-cyber-700/50">
+            <div className="flex items-center space-x-2 px-3 py-1.5 bg-cyber-800/50 rounded-full border border-cyber-700/50">
               <span className="text-xs text-cyber-500">LVL</span>
               <span className="text-sm font-bold text-cyber-300">{progress.level}</span>
               <div className="w-px h-4 bg-cyber-700" />
@@ -116,20 +128,23 @@ export default function Header({ currentPage = 'dashboard' }: HeaderProps) {
             {/* Admin Link */}
             <Link
               href="/admin"
-              className="text-sm text-cyber-500 hover:text-cyber-400 transition-colors hidden sm:block"
+              className="text-sm text-cyber-500 hover:text-cyber-400 transition-colors ml-3"
             >
               Admin Login
             </Link>
 
             {/* Profile Button */}
-            <button className="flex items-center justify-center h-9 w-9 rounded-full bg-cyber-800 border border-cyber-700 hover:border-cyber-500 transition-colors">
+            <button className="flex items-center justify-center h-9 w-9 rounded-full bg-cyber-800 border border-cyber-700 hover:border-cyber-500 transition-colors ml-3">
               <User className="h-4 w-4 text-cyber-400" />
             </button>
+          </div>
 
+          {/* Mobile Right Section */}
+          <div className="flex md:hidden items-center space-x-3 ml-auto">
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden flex items-center justify-center h-9 w-9 rounded-lg hover:bg-cyber-800/50 transition-colors"
+              className="flex items-center justify-center h-9 w-9 rounded-lg hover:bg-cyber-800/50 transition-colors"
             >
               {isMobileMenuOpen ? (
                 <X className="h-5 w-5 text-cyber-400" />
