@@ -1,1 +1,171 @@
+// ============================================
+// Secure Browsing Scenarios
+// ============================================
 
+import type { TrainingScenario } from './types';
+import { scenarioImages } from './images';
+
+export const secureBrowsingScenarios: TrainingScenario[] = [
+  {
+    id: 'browse-001',
+    moduleType: 'secure-browsing',
+    type: 'url-evaluation',
+    title: 'Identify Safe URLs',
+    difficulty: 'beginner',
+    content: {
+      instruction: 'Which URL is SAFE to visit for online banking with Chase?',
+      urls: [
+        { id: 'a', url: 'http://chase.com/login', safe: false, reason: 'Uses HTTP instead of HTTPS' },
+        { id: 'b', url: 'https://chase.com.secure-login.net/banking', safe: false, reason: 'Domain is secure-login.net, not chase.com' },
+        { id: 'c', url: 'https://secure.chase.com/web/auth/login', safe: true, reason: 'Legitimate HTTPS subdomain of chase.com' },
+        { id: 'd', url: 'https://www.chase-bank-login.com/', safe: false, reason: 'Lookalike domain, not chase.com' },
+      ],
+      correctAnswer: 'c',
+    },
+    isCorrectAnswer: true,
+    redFlags: [],
+    explanation: 'Only option C is safe. It uses HTTPS and the domain is chase.com (secure.chase.com is a valid subdomain). The others use HTTP (insecure), are different domains mimicking Chase, or use deceptive subdomain structures.',
+    learningPoints: [
+      'Always look for HTTPS (not HTTP) for sensitive sites',
+      'Check the actual domain before the first "/" ',
+      'Subdomains come BEFORE the main domain',
+      'Legitimate banks use their official domain',
+    ],
+    image: scenarioImages.browser,
+  },
+  {
+    id: 'browse-002',
+    moduleType: 'secure-browsing',
+    type: 'scenario',
+    title: 'Browser Security Warning',
+    difficulty: 'beginner',
+    content: {
+      scenario: 'You\'re trying to access a website and your browser shows a warning: "Your connection is not private. Attackers might be trying to steal your information."',
+      question: 'What should you do?',
+      options: [
+        { id: 'a', text: 'Click "Advanced" and proceed anyway - it\'s probably just a certificate error', isCorrect: false },
+        { id: 'b', text: 'Don\'t proceed, especially if you were going to enter personal information', isCorrect: true },
+        { id: 'c', text: 'Proceed if the site looks professional and trustworthy', isCorrect: false },
+        { id: 'd', text: 'Try a different browser to see if the warning goes away', isCorrect: false },
+      ],
+    },
+    isCorrectAnswer: true,
+    redFlags: [],
+    explanation: 'Browser security warnings exist to protect you. A certificate error could indicate a man-in-the-middle attack where someone is intercepting your connection. Never enter sensitive information on a site showing security warnings.',
+    learningPoints: [
+      'Browser security warnings are there to protect you',
+      'Certificate errors can indicate active attacks',
+      'Never enter personal info on sites with warnings',
+      'If the site is important, contact them directly to report the issue',
+    ],
+    image: scenarioImages.warning,
+  },
+  {
+    id: 'browse-003',
+    moduleType: 'secure-browsing',
+    type: 'scenario',
+    title: 'Pop-up Warning',
+    difficulty: 'beginner',
+    content: {
+      scenario: 'While browsing, a pop-up appears saying "Your computer is infected! Call Microsoft Support immediately: 1-888-555-0123 to fix this issue!"',
+      question: 'What should you do?',
+      options: [
+        { id: 'a', text: 'Call the number to get help - Microsoft detected a problem', isCorrect: false },
+        { id: 'b', text: 'Close the browser tab/window and run your legitimate antivirus software', isCorrect: true },
+        { id: 'c', text: 'Click the X on the pop-up to close it', isCorrect: false },
+        { id: 'd', text: 'Download the suggested security software from the pop-up', isCorrect: false },
+      ],
+    },
+    isCorrectAnswer: true,
+    redFlags: [],
+    explanation: 'This is a tech support scam. Microsoft doesn\'t show pop-ups with phone numbers. Clicking anything on the pop-up (even X) might trigger more pop-ups or downloads. Close the entire browser, run your real antivirus, and never call numbers from pop-ups.',
+    learningPoints: [
+      'Legitimate companies don\'t show infection pop-ups with phone numbers',
+      'Close the browser entirely, don\'t interact with scam pop-ups',
+      'Use your actual antivirus software for security scans',
+      'Never call phone numbers from pop-ups or download their software',
+    ],
+    image: scenarioImages.warning,
+  },
+  {
+    id: 'browse-004',
+    moduleType: 'secure-browsing',
+    type: 'scenario',
+    title: 'Public WiFi Safety',
+    difficulty: 'intermediate',
+    content: {
+      scenario: 'You\'re at a coffee shop and need to check your bank account. The shop has free WiFi called "CoffeeShop_Free_WiFi".',
+      question: 'What\'s the safest approach?',
+      options: [
+        { id: 'a', text: 'Connect and check your account - it\'s a known coffee shop', isCorrect: false },
+        { id: 'b', text: 'Use your phone\'s mobile data (cellular) instead of WiFi for banking', isCorrect: true },
+        { id: 'c', text: 'Connect and use the bank\'s app since apps are secure', isCorrect: false },
+        { id: 'd', text: 'Ask the staff for the WiFi password to ensure it\'s legitimate', isCorrect: false },
+      ],
+    },
+    isCorrectAnswer: true,
+    redFlags: [],
+    explanation: 'Public WiFi, even legitimate networks, can be monitored or spoofed. For sensitive activities like banking, use your mobile data (cellular connection) which is encrypted between your phone and the cell tower. If you must use public WiFi, use a VPN.',
+    learningPoints: [
+      'Public WiFi can be monitored by attackers',
+      'Use mobile data for sensitive activities',
+      'VPNs add encryption on public networks',
+      'Even legitimate WiFi can have malicious users on the same network',
+    ],
+    image: scenarioImages.browser,
+  },
+  {
+    id: 'browse-005',
+    moduleType: 'secure-browsing',
+    type: 'scenario',
+    title: 'Browser Extension Safety',
+    difficulty: 'intermediate',
+    content: {
+      scenario: 'You find a browser extension that claims to save you money by automatically finding coupon codes. It requests permissions to "Read and change all your data on all websites."',
+      question: 'Should you install this extension?',
+      options: [
+        { id: 'a', text: 'Yes, if it has good reviews and many downloads', isCorrect: false },
+        { id: 'b', text: 'No, the permissions are too broad for its stated purpose', isCorrect: true },
+        { id: 'c', text: 'Yes, you can always uninstall it later if there\'s a problem', isCorrect: false },
+        { id: 'd', text: 'Yes, browser extensions are safe because they\'re in the official store', isCorrect: false },
+      ],
+    },
+    isCorrectAnswer: true,
+    redFlags: [],
+    explanation: 'The permission to "read and change all your data on all websites" is extremely powerful. A coupon finder shouldn\'t need access to your banking site, email, or social media. Malicious extensions with broad permissions can steal passwords, track browsing, and inject ads.',
+    learningPoints: [
+      'Always review extension permissions before installing',
+      'Permissions should match the extension\'s purpose',
+      '"Read all data on all websites" is a dangerous permission',
+      'Even popular extensions can be compromised or sold to malicious actors',
+    ],
+    image: scenarioImages.security,
+  },
+  {
+    id: 'browse-006',
+    moduleType: 'secure-browsing',
+    type: 'scenario',
+    title: 'Download Source Verification',
+    difficulty: 'intermediate',
+    content: {
+      scenario: 'You need to download a popular PDF reader. A Google search shows several download sites. Which should you use?',
+      question: 'Select the safest download source:',
+      options: [
+        { id: 'a', text: 'free-pdf-reader-download.com - appears first in search results', isCorrect: false },
+        { id: 'b', text: 'softpedia.com - a known software download site', isCorrect: false },
+        { id: 'c', text: 'adobe.com/acrobat - the official Adobe website', isCorrect: true },
+        { id: 'd', text: 'download.cnet.com - CNET is a trusted tech news site', isCorrect: false },
+      ],
+    },
+    isCorrectAnswer: true,
+    redFlags: [],
+    explanation: 'Always download software from the official vendor\'s website. Third-party download sites, even well-known ones, may bundle unwanted software (PUPs), have outdated versions, or in worst cases, distribute malware-infected copies.',
+    learningPoints: [
+      'Download software only from official vendor websites',
+      'Third-party sites may bundle unwanted programs',
+      'Search results can include ads for fake download sites',
+      'Verify the URL matches the official vendor domain',
+    ],
+    image: scenarioImages.browser,
+  },
+];
