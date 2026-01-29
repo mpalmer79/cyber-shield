@@ -65,10 +65,10 @@ export default function Header({ currentPage = 'dashboard' }: HeaderProps) {
               href="https://github.com/mpalmer79/cyber-shield"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden sm:flex items-center space-x-2 px-3 py-1.5 bg-cyber-800/50 hover:bg-cyber-700/50 rounded-full border border-cyber-700/50 hover:border-cyber-500/50 transition-all duration-200 group"
+              className="hidden sm:flex items-center space-x-2 px-4 py-2 bg-white hover:bg-gray-100 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 group"
             >
-              <Github className="h-4 w-4 text-cyber-400 group-hover:text-cyber-300" />
-              <span className="text-xs font-medium text-cyber-400 group-hover:text-cyber-300">GitHub</span>
+              <Github className="h-5 w-5 text-gray-800 group-hover:text-black" />
+              <span className="text-sm font-semibold text-gray-800 group-hover:text-black">GitHub</span>
             </a>
           </div>
 
@@ -98,10 +98,10 @@ export default function Header({ currentPage = 'dashboard' }: HeaderProps) {
               href="https://www.linkedin.com/in/mpalmer1234/"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden sm:flex items-center space-x-2 px-3 py-1.5 bg-[#0A66C2]/20 hover:bg-[#0A66C2]/30 rounded-full border border-[#0A66C2]/50 hover:border-[#0A66C2]/70 transition-all duration-200 group"
+              className="hidden sm:flex items-center space-x-2 px-4 py-2 bg-white hover:bg-gray-100 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 group"
             >
-              <LinkedInIcon className="h-4 w-4 text-[#0A66C2] group-hover:text-[#0A66C2]" />
-              <span className="text-xs font-medium text-[#0A66C2] group-hover:text-[#3b82f6]">LinkedIn</span>
+              <LinkedInIcon className="h-5 w-5 text-[#0A66C2]" />
+              <span className="text-sm font-semibold text-[#0A66C2]">LinkedIn</span>
             </a>
 
             {/* XP Badge */}
