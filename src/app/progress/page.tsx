@@ -9,16 +9,20 @@ import {
   Award,
   Calendar,
   BarChart3,
-  BookOpen
+  BookOpen,
+  Brain,
+  Zap,
 } from 'lucide-react';
-import { Header, ProgressStats, NoProgressData, NoBadgesEarned, ProgressStatsSkeleton, AnimatedCounter, AnimatedProgress, Confetti } from '@/components';
-import { useProgressStore, useModulesStore } from '@/store';
+import { Header, ProgressStats, NoProgressData, NoBadgesEarned, ProgressStatsSkeleton, AnimatedCounter, AnimatedProgress, Confetti, VulnerabilityRadar } from '@/components';
+import { useProgressStore, useModulesStore, useVulnerabilityStore } from '@/store';
 import { cn, formatDate, getLevelTitle, getDifficultyColor } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
+import { calculateSecurityIQ, getWeakCategories, RED_FLAG_CATEGORIES } from '@/lib/adaptive';
 
 export default function ProgressPage() {
   const { progress } = useProgressStore();
   const { modules } = useModulesStore();
+  const { profile: vulnProfile } = useVulnerabilityStore();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -43,6 +47,10 @@ export default function ProgressPage() {
       )
     : 0;
 
+  // Adaptive engine stats
+  const securityIQ = calculateSecurityIQ(vulnProfile);
+  const weakSpots = getWeakCategories(vulnProfile, 3);
+
   // Get module details
   const getModuleDetails = (moduleId: string) => {
     return modules.find((m) => m.id === moduleId);
@@ -58,7 +66,7 @@ export default function ProgressPage() {
       if (!m.lastAttemptDate) return false;
       const attemptDate = new Date(m.lastAttemptDate);
       const now = new Date();
-      return (now.getTime() - attemptDate.getTime()) < 60000; // Within last minute
+      return (now.getTime() - attemptDate.getTime()) < 60000;
     });
     if (recentCompletion) {
       setShowConfetti(true);
@@ -79,14 +87,17 @@ export default function ProgressPage() {
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-cyber-100 mb-2">Your Progress</h1>
             <p className="text-cyber-400">
-              Track your cybersecurity training journey and achievements.
+              Track your cybersecurity training journey and adaptive threat analysis.
             </p>
           </div>
 
           <div className="grid lg:grid-cols-3 gap-8">
-            {/* Left Column - Progress Stats */}
-            <div className="lg:col-span-1">
+            {/* Left Column - Progress Stats + Vulnerability Radar */}
+            <div className="lg:col-span-1 space-y-6">
               {isLoading ? <ProgressStatsSkeleton /> : <ProgressStats />}
+
+              {/* Vulnerability Radar Chart */}
+              <VulnerabilityRadar profile={vulnProfile} />
             </div>
 
             {/* Right Column - Detailed Progress */}
@@ -105,23 +116,67 @@ export default function ProgressPage() {
                   <div className="text-2xl font-bold text-cyber-200">
                     <AnimatedCounter value={completedModules.length} />
                   </div>
-                  <div className="text-xs text-cyber-500">Modules Completed</div>
+                  <div className="text-xs text-cyber-500">Modules Done</div>
                 </div>
                 <div className="cyber-card p-4 text-center">
-                  <BarChart3 className="h-6 w-6 text-cyber-400 mx-auto mb-2" />
-                  <div className="text-2xl font-bold text-cyber-200">
-                    <AnimatedCounter value={avgScore} suffix="%" />
+                  <Brain className="h-6 w-6 text-cyber-400 mx-auto mb-2" />
+                  <div className={cn(
+                    'text-2xl font-bold font-mono',
+                    securityIQ >= 80 ? 'text-green-400' :
+                    securityIQ >= 60 ? 'text-yellow-400' :
+                    securityIQ >= 40 ? 'text-orange-400' : 'text-red-400'
+                  )}>
+                    <AnimatedCounter value={securityIQ} />
                   </div>
-                  <div className="text-xs text-cyber-500">Avg. Score</div>
+                  <div className="text-xs text-cyber-500">Security IQ</div>
                 </div>
                 <div className="cyber-card p-4 text-center">
-                  <Clock className="h-6 w-6 text-blue-400 mx-auto mb-2" />
+                  <Zap className="h-6 w-6 text-purple-400 mx-auto mb-2" />
                   <div className="text-2xl font-bold text-cyber-200">
-                    <AnimatedCounter value={totalAttempts} />
+                    <AnimatedCounter value={vulnProfile.totalScenarios} />
                   </div>
-                  <div className="text-xs text-cyber-500">Total Attempts</div>
+                  <div className="text-xs text-cyber-500">Scenarios Analyzed</div>
                 </div>
               </div>
+
+              {/* Adaptive Engine Status Banner */}
+              {vulnProfile.totalScenarios > 0 && (
+                <div className={cn(
+                  'cyber-card p-4 border-l-4',
+                  vulnProfile.isCalibrated ? 'border-l-green-500' : 'border-l-yellow-500'
+                )}>
+                  <div className="flex items-start space-x-3">
+                    <Brain className={cn(
+                      'h-5 w-5 mt-0.5 shrink-0',
+                      vulnProfile.isCalibrated ? 'text-green-400' : 'text-yellow-400'
+                    )} />
+                    <div>
+                      <h3 className={cn(
+                        'text-sm font-semibold',
+                        vulnProfile.isCalibrated ? 'text-green-300' : 'text-yellow-300'
+                      )}>
+                        {vulnProfile.isCalibrated
+                          ? 'Adaptive Engine Active'
+                          : `Adaptive Engine Calibrating (${vulnProfile.totalSessions}/3 sessions)`
+                        }
+                      </h3>
+                      <p className="text-xs text-cyber-400 mt-1">
+                        {vulnProfile.isCalibrated
+                          ? weakSpots.length > 0
+                            ? `Training scenarios are weighted toward your weak spots. Current focus: ${
+                                weakSpots.slice(0, 2).map(w => {
+                                  let cat = RED_FLAG_CATEGORIES.find(c => c.id === w.categoryId);
+                                  return cat ? `${cat.icon} ${cat.label} (${Math.round(w.detectionRate * 100)}%)` : w.categoryId;
+                                }).join(', ')
+                              }`
+                            : 'Scenarios are personalized based on your vulnerability profile.'
+                          : 'Complete more training sessions to unlock personalized scenario targeting.'
+                        }
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Module Progress List */}
               <div className="cyber-card p-6">
