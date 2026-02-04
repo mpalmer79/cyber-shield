@@ -6,20 +6,78 @@
 [![React](https://img.shields.io/badge/React_18-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 
-AI-powered cybersecurity training platform that transforms employees into your strongest line of defense against phishing, social engineering, and cyber attacks.
+AI-powered cybersecurity training platform with an **Adaptive Difficulty Engine** that learns your weaknesses and personalizes training to close your security gaps. Transforms employees into your strongest line of defense against phishing, social engineering, and cyber attacks.
 
 ![CyberShield Hero](https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=1200&q=80)
 
-## ✨ Features 
+## ✨ Features
 
-- **AI-Powered Training** — Claude AI generates dynamic, realistic scenarios that adapt to user skill level
-- **8 Training Modules** — Comprehensive coverage from phishing detection to advanced threat hunting
-- **Gamification System** — XP, levels, badges, and streaks to keep users engaged
-- **Real-time Feedback** — Instant coaching and explanations during exercises
-- **Progress Tracking** — Detailed analytics and completion tracking
-- **Leaderboard** — Compete with colleagues and track team performance
-- **Dark/Light Themes** — Full theme support with beautiful cyber-themed UI
-- **Comprehensive Test Suite** — Jest + React Testing Library coverage
+- **🧠 Adaptive Difficulty Engine** — Tracks which threat types you miss and dynamically weights future scenarios toward your weak spots
+- **📊 Vulnerability Radar** — Interactive SVG radar chart showing detection rates across 10 threat categories
+- **🎯 Security IQ Score** — Weighted composite score reflecting your overall threat detection ability
+- **🤖 AI-Powered Training** — Claude AI generates dynamic, realistic scenarios that adapt to user skill level
+- **📚 8 Training Modules** — Comprehensive coverage from phishing detection to advanced threat hunting
+- **🎮 Gamification System** — XP, levels, badges, and streaks to keep users engaged
+- **💬 Real-time Feedback** — Instant coaching and explanations during exercises
+- **📈 Progress Tracking** — Detailed analytics, completion tracking, and vulnerability profiling
+- **🏆 Leaderboard** — Compete with colleagues and track team performance
+- **🌗 Dark/Light Themes** — Full theme support with beautiful cyber-themed UI
+- **🧪 Comprehensive Test Suite** — Jest + React Testing Library coverage
+
+## 🧠 Adaptive Difficulty Engine (v2.0)
+
+The core intelligence that makes CyberShield a personalized training platform rather than a static quiz.
+
+### How It Works
+
+```
+Session 1-2 (Calibrating)          Session 3+ (Adaptive)
+┌──────────────────────┐          ┌──────────────────────────┐
+│  Random scenarios     │          │  60% weakness-targeted   │
+│  Every answer tracked │   ──►    │  40% random for variety  │
+│  Building profile     │          │  Avoids recent repeats   │
+└──────────────────────┘          └──────────────────────────┘
+```
+
+1. **Red Flag Taxonomy** — Every scenario's red flags are classified into 10 canonical vulnerability categories using keyword-weighted matching
+2. **Vulnerability Profiling** — Each answer records whether you caught or missed threats in each category, building a per-category detection rate
+3. **Calibration Phase** — The first 3 sessions collect baseline data with random scenarios while silently profiling your weaknesses
+4. **Adaptive Selection** — After calibration, 60% of scenarios are weighted toward your weakest categories while 40% stay random for coverage
+5. **Security IQ** — A weighted composite score (0–100) reflecting detection ability across all tested categories
+
+### 10 Threat Categories Tracked
+
+| Category | What It Measures |
+|----------|-----------------|
+| 🌐 **Domain Spoofing** | Spotting fake sender domains and URL structures |
+| ⏰ **Urgency & Pressure** | Recognizing artificial deadlines and fear tactics |
+| 👔 **Authority Impersonation** | Detecting fake CEOs, IT staff, and officials |
+| 🔗 **Suspicious Links** | Identifying deceptive URLs and redirects |
+| 📎 **Attachment Threats** | Catching dangerous files, double extensions, malware |
+| 📝 **Generic Communication** | Recognizing impersonal greetings and vague content |
+| 🔑 **Credential Harvesting** | Detecting password and personal data theft attempts |
+| 🎭 **Emotional Manipulation** | Spotting fear, greed, and curiosity exploitation |
+| 🚧 **Process Bypass** | Catching requests to skip procedures or maintain secrecy |
+| 🏷️ **Brand Impersonation** | Detecting professional-looking but fake brand mimicry |
+
+### Vulnerability Radar
+
+The progress page features an interactive SVG radar chart that visualizes your detection rates across all 10 categories. Each vertex is color-coded — green (≥70%), yellow (40–69%), red (<40%) — with hover tooltips showing exact stats and an expandable breakdown panel with animated progress bars.
+
+### Architecture
+
+```
+src/lib/adaptive/
+├── red-flag-taxonomy.ts    # 10 categories + keyword classifier
+├── engine.ts               # Core: profiling, scoring, adaptive selection
+└── index.ts                # Barrel exports
+
+src/components/
+└── VulnerabilityRadar.tsx  # SVG radar chart + insights panel
+
+src/store/index.ts
+└── useVulnerabilityStore   # Persisted Zustand store (localStorage)
+```
 
 ## 🎯 Training Modules
 
@@ -38,7 +96,7 @@ AI-powered cybersecurity training platform that transforms employees into your s
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - npm or yarn
 - Anthropic API key
 
@@ -88,27 +146,34 @@ npm start
 ```
 cyber-shield/
 ├── src/
-│   ├── app/                    # Next.js App Router pages
-│   │   ├── admin/              # Admin dashboard
-│   │   ├── api/                # API routes
-│   │   │   ├── ai/             # Claude AI integration
-│   │   │   └── scenarios/      # Training scenarios
-│   │   ├── leaderboard/        # Leaderboard page
-│   │   ├── progress/           # User progress page
-│   │   ├── settings/           # User settings
-│   │   └── training/           # Training modules
-│   │       └── [id]/           # Dynamic module pages
-│   ├── components/             # React components
-│   │   ├── ui/                 # Reusable UI components
-│   │   ├── ChatInterface.tsx   # AI chat component
-│   │   ├── ModuleCard.tsx      # Training module cards
+│   ├── app/                        # Next.js App Router pages
+│   │   ├── admin/                  # Admin dashboard
+│   │   ├── api/                    # API routes
+│   │   │   ├── ai/                 # Claude AI integration
+│   │   │   └── scenarios/          # Training scenarios
+│   │   ├── leaderboard/            # Leaderboard page
+│   │   ├── progress/               # Progress + vulnerability radar
+│   │   ├── settings/               # User settings
+│   │   └── training/               # Training modules
+│   │       └── [id]/               # Dynamic module pages (adaptive)
+│   ├── components/                 # React components
+│   │   ├── ui/                     # Reusable UI components
+│   │   ├── ChatInterface.tsx       # AI chat component
+│   │   ├── ModuleCard.tsx          # Training module cards
+│   │   ├── VulnerabilityRadar.tsx  # SVG radar chart + insights
 │   │   └── ...
-│   ├── hooks/                  # Custom React hooks
-│   ├── lib/                    # Utility functions
-│   ├── store/                  # Zustand state management
-│   └── types/                  # TypeScript definitions
-├── __tests__/                  # Test files
-├── public/                     # Static assets
+│   ├── hooks/                      # Custom React hooks
+│   ├── lib/                        # Utility functions
+│   │   ├── adaptive/               # Adaptive Difficulty Engine
+│   │   │   ├── red-flag-taxonomy.ts
+│   │   │   ├── engine.ts
+│   │   │   └── index.ts
+│   │   ├── scenarios/              # 60+ training scenarios (8 modules)
+│   │   └── utils.ts                # Shared utilities
+│   ├── store/                      # Zustand state management (6 stores)
+│   └── types/                      # TypeScript definitions (30+ interfaces)
+├── __tests__/                      # Test files
+├── public/                         # Static assets
 └── ...config files
 ```
 
@@ -120,7 +185,7 @@ cyber-shield/
 | **Language** | TypeScript |
 | **UI Library** | React 18 |
 | **Styling** | Tailwind CSS |
-| **State Management** | Zustand |
+| **State Management** | Zustand (6 persisted stores) |
 | **Animations** | Framer Motion |
 | **Icons** | Lucide React |
 | **AI Integration** | Anthropic Claude API |
@@ -141,11 +206,22 @@ cyber-shield/
 ## 🎮 How It Works
 
 1. **Select a Module** — Choose from 8 training modules based on your skill level
-2. **Interactive Scenarios** — Engage with AI-generated realistic cybersecurity scenarios
+2. **Adaptive Scenarios** — The engine selects scenarios targeting your weakest threat categories (after 3 calibration sessions)
 3. **Make Decisions** — Identify threats, respond to incidents, or spot social engineering
 4. **Get Feedback** — Receive instant AI-powered coaching and explanations
-5. **Earn Rewards** — Gain XP, unlock badges, and climb the leaderboard
-6. **Track Progress** — Monitor your improvement across all security domains
+5. **Build Your Profile** — Every answer updates your vulnerability profile across 10 threat categories
+6. **Track Your Radar** — Watch your detection rates improve on the interactive vulnerability radar chart
+7. **Earn Rewards** — Gain XP, unlock badges, and climb the leaderboard
+
+## 📊 Data Persistence
+
+All user data is stored locally via Zustand's persist middleware with localStorage:
+
+| Store | Key | What It Stores |
+|-------|-----|----------------|
+| Progress | `cybershield-progress` | Module completion, XP, level, badges, streaks |
+| Settings | `cybershield-settings` | Dark mode, sound, difficulty, accessibility |
+| Vulnerability | `cybershield-vulnerability` | Adaptive profile, category stats, session history (last 200 results) |
 
 ## 🔒 Security Note
 
