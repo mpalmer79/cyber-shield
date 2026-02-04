@@ -40,7 +40,7 @@ export default function ModuleCard({ module, onClick, variant = 'default' }: Mod
               alt={module.title}
               fill
               className={cn(
-                'object-cover transition-transform duration-700',
+                'object-cover object-top transition-transform duration-700',
                 !isLocked && 'group-hover:scale-110'
               )}
               sizes="(max-width: 768px) 100vw, 50vw"
@@ -192,7 +192,7 @@ export default function ModuleCard({ module, onClick, variant = 'default' }: Mod
               src={module.image}
               alt={module.title}
               fill
-              className="object-cover"
+              className="object-cover object-top"
               sizes="64px"
             />
           ) : (
@@ -208,9 +208,9 @@ export default function ModuleCard({ module, onClick, variant = 'default' }: Mod
         </div>
 
         {/* Content */}
-        <div className="flex-1 ml-4 text-left">
+        <div className="flex-1 min-w-0 ml-4 text-left">
           <h4 className={cn(
-            'font-medium text-sm',
+            'font-medium truncate',
             isLocked ? 'text-gray-400' : 'text-cyber-100'
           )}>
             {module.title}
@@ -261,7 +261,7 @@ export default function ModuleCard({ module, onClick, variant = 'default' }: Mod
             alt={module.title}
             fill
             className={cn(
-              'object-cover transition-transform duration-700',
+              'object-cover object-top transition-transform duration-700',
               !isLocked && 'group-hover:scale-110'
             )}
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
