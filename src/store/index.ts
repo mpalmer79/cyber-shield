@@ -10,6 +10,12 @@ import type {
   UserSettings,
   SessionFeedback,
 } from '@/types';
+import type { VulnerabilityProfile, ScenarioResult } from '@/lib/adaptive';
+import {
+  createEmptyProfile,
+  recordScenarioResult,
+  completeSession,
+} from '@/lib/adaptive';
 
 // ============================================
 // Training Modules Store
@@ -451,3 +457,45 @@ export const useUIStore = create<UIState>((set) => ({
   showToast: (message, type) => set({ toast: { message, type } }),
   hideToast: () => set({ toast: null }),
 }));
+
+// ============================================
+// Vulnerability Profile Store (Persisted)
+// Adaptive Difficulty Engine data
+// ============================================
+
+interface VulnerabilityState {
+  profile: VulnerabilityProfile;
+  recordResult: (result: ScenarioResult) => void;
+  finishSession: () => void;
+  getRecentScenarioIds: (count?: number) => string[];
+  resetProfile: () => void;
+}
+
+export const useVulnerabilityStore = create<VulnerabilityState>()(
+  persist(
+    (set, get) => ({
+      profile: createEmptyProfile(),
+
+      recordResult: (result) =>
+        set((state) => ({
+          profile: recordScenarioResult(state.profile, result),
+        })),
+
+      finishSession: () =>
+        set((state) => ({
+          profile: completeSession(state.profile),
+        })),
+
+      getRecentScenarioIds: (count = 20) => {
+        let history = get().profile.sessionHistory;
+        let recent = history.slice(Math.max(0, history.length - count));
+        return recent.map(r => r.scenarioId);
+      },
+
+      resetProfile: () => set({ profile: createEmptyProfile() }),
+    }),
+    {
+      name: 'cybershield-vulnerability',
+    }
+  )
+);
