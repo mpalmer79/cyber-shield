@@ -25,10 +25,11 @@ import {
   Zap,
 } from 'lucide-react';
 import { Header, ScoreDisplay } from '@/components';
-import { useModulesStore, useSessionStore, useProgressStore } from '@/store';
+import { useModulesStore, useSessionStore, useProgressStore, useVulnerabilityStore } from '@/store';
 import { cn } from '@/lib/utils';
-import { getRandomScenarios, TrainingScenario, scenarioImages } from '@/lib/scenarios';
+import { getAdaptiveScenarios, TrainingScenario, scenarioImages } from '@/lib/scenarios';
 import type { SessionFeedback } from '@/types';
+import type { ScenarioResult } from '@/lib/adaptive';
 
 type TrainingPhase = 'intro' | 'training' | 'results';
 
@@ -72,6 +73,7 @@ export default function TrainingModulePage() {
   const { getModule, updateModuleStatus, updateModuleScore } = useModulesStore();
   const { startSession, endSession, score } = useSessionStore();
   const { updateModuleProgress, addXP, updateStreak } = useProgressStore();
+  const { profile: vulnProfile, recordResult, finishSession: finishVulnSession, getRecentScenarioIds } = useVulnerabilityStore();
 
   const module = getModule(moduleId);
 
@@ -87,9 +89,15 @@ export default function TrainingModulePage() {
   const totalScenarios = 5;
   const currentScenario = scenarios[scenarioIndex];
 
-  // Initialize scenarios when training starts
+  // Initialize scenarios when training starts (adaptive engine)
   const initializeScenarios = () => {
-    const moduleScenarios = getRandomScenarios(module?.type || 'phishing', totalScenarios);
+    const recentIds = getRecentScenarioIds(15);
+    const moduleScenarios = getAdaptiveScenarios(
+      module?.type || 'phishing',
+      totalScenarios,
+      vulnProfile,
+      recentIds
+    );
     setScenarios(moduleScenarios);
   };
 
@@ -132,6 +140,16 @@ export default function TrainingModulePage() {
     if (isCorrect) {
       setCorrectAnswers((prev) => prev + 1);
     }
+
+    // Record into adaptive vulnerability tracker
+    const vulnResult: ScenarioResult = {
+      scenarioId: currentScenario.id,
+      moduleType: currentScenario.moduleType,
+      redFlags: currentScenario.redFlags,
+      wasCorrect: isCorrect,
+      timestamp: new Date().toISOString(),
+    };
+    recordResult(vulnResult);
 
     setAnsweredScenarios((prev) => [...prev, { correct: isCorrect, scenario: currentScenario }]);
   };
@@ -194,6 +212,9 @@ export default function TrainingModulePage() {
     if (passed) {
       updateModuleStatus(moduleId, 'completed');
     }
+
+    // Mark adaptive engine session as complete (counts toward calibration)
+    finishVulnSession();
 
     setPhase('results');
   };
