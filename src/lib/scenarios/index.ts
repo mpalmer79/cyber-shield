@@ -29,6 +29,8 @@ import { incidentResponseScenarios } from './incident-response';
 import { dataProtectionScenarios } from './data-protection';
 import { malwareAwarenessScenarios } from './malware-awareness';
 import { threatHuntingScenarios } from './threat-hunting';
+import type { VulnerabilityProfile } from '../adaptive';
+import { selectAdaptiveScenarios } from '../adaptive';
 
 // ============================================
 // Utility Functions
@@ -67,6 +69,20 @@ export function getRandomScenarios(moduleType: string, count: number): TrainingS
   const scenarios = getScenariosForModule(moduleType);
   const shuffled = [...scenarios].sort(() => Math.random() - 0.5);
   return shuffled.slice(0, Math.min(count, scenarios.length));
+}
+
+/**
+ * Get adaptive scenarios weighted toward user's weak spots.
+ * Falls back to random selection before calibration.
+ */
+export function getAdaptiveScenarios(
+  moduleType: string,
+  count: number,
+  profile: VulnerabilityProfile,
+  recentIds: string[] = []
+): TrainingScenario[] {
+  const scenarios = getScenariosForModule(moduleType);
+  return selectAdaptiveScenarios(scenarios, count, profile, recentIds);
 }
 
 /**
