@@ -1,11 +1,30 @@
-export { default as Header } from './Header';
-export { default as ModuleCard } from './ModuleCard';
-export { default as FeatureCard, HeroFeatureCard, StatsFeatureCard } from './FeatureCard';
-export { default as PhishingScenario } from './PhishingScenario';
-export { default as ChatInterface } from './ChatInterface';
-export { default as ScoreDisplay } from './ScoreDisplay';
-export { default as ProgressStats } from './ProgressStats';
-export { default as VulnerabilityRadar } from './VulnerabilityRadar';
+// ============================================
+// CyberShield - Adaptive Difficulty Engine
+// ============================================
 
-// UI Components
-export * from './ui';
+export {
+  RED_FLAG_CATEGORIES,
+  getCategoryById,
+  classifyRedFlag,
+  classifyScenarioFlags,
+  getAllCategoryIds,
+} from './red-flag-taxonomy';
+export type { RedFlagCategory } from './red-flag-taxonomy';
+
+export {
+  createEmptyProfile,
+  recordScenarioResult,
+  completeSession,
+  getRadarData,
+  getWeakCategories,
+  getStrongCategories,
+  getVulnerabilitySummary,
+  selectAdaptiveScenarios,
+  calculateSecurityIQ,
+} from './engine';
+export type {
+  ScenarioResult,
+  CategoryStats,
+  VulnerabilityProfile,
+  RadarDataPoint,
+} from './engine';
