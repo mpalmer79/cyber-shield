@@ -33,7 +33,7 @@ export default function FeatureCard({
           src={image}
           alt={title}
           fill
-          className="object-cover transition-transform duration-700 group-hover:scale-110"
+          className="object-cover object-top transition-transform duration-700 group-hover:scale-110"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
         />
         
@@ -112,7 +112,7 @@ export function HeroFeatureCard({
           src={image}
           alt={title}
           fill
-          className="object-cover transition-transform duration-700 group-hover:scale-105"
+          className="object-cover object-top transition-transform duration-700 group-hover:scale-105"
           sizes="(max-width: 768px) 100vw, 50vw"
           priority
         />
@@ -189,7 +189,7 @@ export function StatsFeatureCard({
           src={image}
           alt={title}
           fill
-          className="object-cover"
+          className="object-cover object-top"
           sizes="(max-width: 640px) 50vw, 25vw"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-cyber-950/95 via-cyber-950/80 to-cyber-950/60" />
