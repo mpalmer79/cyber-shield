@@ -44,7 +44,6 @@ export const useModulesStore = create<ModulesState>((set, get) => ({
       completedScenarios: 0,
       requiredScore: 70,
       icon: '🎣',
-      // Professional stock photo: Hacker/phishing concept
       image: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=800&q=80',
       skills: ['Email Analysis', 'URL Inspection', 'Sender Verification'],
     },
@@ -60,8 +59,7 @@ export const useModulesStore = create<ModulesState>((set, get) => ({
       completedScenarios: 0,
       requiredScore: 70,
       icon: '🎭',
-      // Professional stock photo: Business manipulation/social engineering
-      image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&q=80',
+      image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&q=80&fit=crop&crop=top',
       skills: ['Threat Recognition', 'Information Protection', 'Verification Protocols'],
     },
     {
@@ -76,7 +74,6 @@ export const useModulesStore = create<ModulesState>((set, get) => ({
       completedScenarios: 0,
       requiredScore: 75,
       icon: '🚨',
-      // Professional stock photo: Security Operations Center
       image: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&q=80',
       prerequisites: ['phishing-101'],
       skills: ['Incident Triage', 'Escalation', 'Documentation', 'Containment'],
@@ -93,7 +90,6 @@ export const useModulesStore = create<ModulesState>((set, get) => ({
       completedScenarios: 0,
       requiredScore: 80,
       icon: '🔐',
-      // Professional stock photo: Biometric/authentication
       image: 'https://images.unsplash.com/photo-1633265486064-086b219458ec?w=800&q=80',
       skills: ['Password Creation', 'MFA Setup', 'Credential Management'],
     },
@@ -109,7 +105,6 @@ export const useModulesStore = create<ModulesState>((set, get) => ({
       completedScenarios: 0,
       requiredScore: 75,
       icon: '🛡️',
-      // Professional stock photo: Data center/server room
       image: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&q=80',
       prerequisites: ['password-security'],
       skills: ['Data Classification', 'Encryption Basics', 'Secure Sharing'],
@@ -126,7 +121,6 @@ export const useModulesStore = create<ModulesState>((set, get) => ({
       completedScenarios: 0,
       requiredScore: 80,
       icon: '🔍',
-      // Professional stock photo: Analyst at multiple monitors
       image: 'https://images.unsplash.com/photo-1551808525-51a94da548ce?w=800&q=80',
       prerequisites: ['incident-response-101', 'data-protection-fundamentals'],
       skills: ['Log Analysis', 'IOC Detection', 'Pattern Recognition'],
@@ -143,7 +137,6 @@ export const useModulesStore = create<ModulesState>((set, get) => ({
       completedScenarios: 0,
       requiredScore: 75,
       icon: '🦠',
-      // Professional stock photo: Virus/malware visualization
       image: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800&q=80',
       prerequisites: ['phishing-101'],
       skills: ['Malware Types', 'Prevention', 'Safe Downloads'],
@@ -160,7 +153,6 @@ export const useModulesStore = create<ModulesState>((set, get) => ({
       completedScenarios: 0,
       requiredScore: 70,
       icon: '🌐',
-      // Professional stock photo: Secure browsing/HTTPS
       image: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&q=80',
       skills: ['HTTPS Recognition', 'Cookie Management', 'Safe Downloads'],
     },
