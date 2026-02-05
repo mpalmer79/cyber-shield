@@ -87,7 +87,7 @@ export default function LeaderboardPage() {
       default:
         return (
           <div className={cn("flex items-center justify-center bg-cyber-800/80 rounded-full", sizeClasses[size])}>
-            <span className="text-sm font-bold text-cyber-400">#{rank}</span>
+            <span className="text-sm font-bold text-slate-300">#{rank}</span>
           </div>
         );
     }
@@ -141,8 +141,8 @@ export default function LeaderboardPage() {
                 sizes="96px"
               />
             </div>
-            <h1 className="text-4xl font-bold text-cyber-100 mb-3">Leaderboard</h1>
-            <p className="text-cyber-400 text-lg">
+            <h1 className="text-4xl font-bold text-white mb-3">Leaderboard</h1>
+            <p className="text-slate-300 text-lg">
               See how you rank against other security trainees.
             </p>
           </div>
@@ -159,10 +159,10 @@ export default function LeaderboardPage() {
                   key={filter.value}
                   onClick={() => handleFilterChange(filter.value as TimeFilter)}
                   className={cn(
-                    'px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-200',
+                    'px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-200',
                     timeFilter === filter.value
-                      ? 'bg-cyber-700 text-cyber-200 shadow-lg'
-                      : 'text-cyber-400 hover:text-cyber-300 hover:bg-cyber-800/50'
+                      ? 'bg-cyber-700/50 text-white shadow-sm'
+                      : 'text-slate-400 hover:text-white'
                   )}
                 >
                   {filter.label}
@@ -173,30 +173,17 @@ export default function LeaderboardPage() {
         </div>
       </section>
 
+      {/* Main Content */}
       <main className="py-8 px-4 -mt-8">
         <div className="container mx-auto max-w-4xl">
           {isLoading ? (
-            <>
-              {/* Loading State */}
-              <div className="grid grid-cols-3 gap-4 mb-8">
-                {[0, 1, 2].map((i) => (
-                  <div key={i} className={cn("cyber-card p-4 text-center animate-pulse", i !== 1 && "mt-8")}>
-                    <div className="w-16 h-16 bg-cyber-800/50 rounded-full mx-auto mb-3" />
-                    <div className="h-6 bg-cyber-800/50 rounded w-24 mx-auto mb-2" />
-                    <div className="h-4 bg-cyber-800/50 rounded w-16 mx-auto" />
-                  </div>
-                ))}
-              </div>
-              <div className="cyber-card p-4 mb-6">
-                <LeaderboardSkeleton count={10} />
-              </div>
-            </>
+            <LeaderboardSkeleton />
           ) : (
             <>
               {/* Top 3 Podium */}
-              <div className="grid grid-cols-3 gap-4 mb-8">
+              <div className="grid grid-cols-3 gap-4 mb-8 items-end">
                 {/* Second Place */}
-                <div className="cyber-card p-5 text-center mt-8 hover:scale-105 transition-transform group">
+                <div className="cyber-card p-5 text-center mt-4 hover:scale-105 transition-transform group">
                   <div className="relative w-16 h-16 mx-auto mb-4 rounded-full overflow-hidden border-2 border-gray-400/50 shadow-lg group-hover:border-gray-300/70 transition-colors">
                     <Image
                       src={stockImages.silverMedal}
@@ -206,17 +193,17 @@ export default function LeaderboardPage() {
                       sizes="64px"
                     />
                   </div>
-                  <div className="text-xl font-bold text-cyber-200">{mockLeaderboard[1].displayName}</div>
-                  <div className="text-sm text-cyber-500 mb-2">Level {mockLeaderboard[1].level}</div>
+                  <div className="text-xl font-bold text-white">{mockLeaderboard[1].displayName}</div>
+                  <div className="text-sm text-slate-400 mb-2">Level {mockLeaderboard[1].level}</div>
                   <div className="text-lg font-semibold text-gray-300">
                     <AnimatedCounter value={mockLeaderboard[1].totalScore} />
                   </div>
-                  <div className="text-xs text-cyber-600 mt-1">points</div>
+                  <div className="text-xs text-slate-500 mt-1">points</div>
                 </div>
 
                 {/* First Place */}
-                <PulseWrapper color="yellow" active={true}>
-                  <div className="cyber-card p-5 text-center border-yellow-500/30 bg-gradient-to-b from-yellow-500/10 to-transparent hover:scale-105 transition-transform group">
+                <PulseWrapper>
+                  <div className="cyber-card p-6 text-center border-yellow-500/30 bg-gradient-to-b from-yellow-500/10 to-transparent hover:from-yellow-500/15 transition-colors group">
                     <div className="relative w-20 h-20 mx-auto mb-4 -mt-10 rounded-full overflow-hidden border-4 border-yellow-500/50 shadow-2xl shadow-yellow-500/30 group-hover:border-yellow-400/70 transition-colors">
                       <Image
                         src={stockImages.goldMedal}
@@ -226,12 +213,12 @@ export default function LeaderboardPage() {
                         sizes="80px"
                       />
                     </div>
-                    <div className="text-2xl font-bold text-cyber-100">{mockLeaderboard[0].displayName}</div>
-                    <div className="text-sm text-cyber-500 mb-2">Level {mockLeaderboard[0].level}</div>
+                    <div className="text-2xl font-bold text-white">{mockLeaderboard[0].displayName}</div>
+                    <div className="text-sm text-slate-400 mb-2">Level {mockLeaderboard[0].level}</div>
                     <div className="text-2xl font-bold text-yellow-400">
                       <AnimatedCounter value={mockLeaderboard[0].totalScore} />
                     </div>
-                    <div className="text-xs text-cyber-600 mt-1">points</div>
+                    <div className="text-xs text-slate-500 mt-1">points</div>
                     <div className="flex items-center justify-center space-x-2 mt-3 px-3 py-1.5 bg-orange-500/10 rounded-full border border-orange-500/20">
                       <div className="relative w-4 h-4 rounded-full overflow-hidden">
                         <Image src={stockImages.fire} alt="Streak" fill className="object-cover" sizes="16px" />
@@ -252,12 +239,12 @@ export default function LeaderboardPage() {
                       sizes="64px"
                     />
                   </div>
-                  <div className="text-xl font-bold text-cyber-200">{mockLeaderboard[2].displayName}</div>
-                  <div className="text-sm text-cyber-500 mb-2">Level {mockLeaderboard[2].level}</div>
+                  <div className="text-xl font-bold text-white">{mockLeaderboard[2].displayName}</div>
+                  <div className="text-sm text-slate-400 mb-2">Level {mockLeaderboard[2].level}</div>
                   <div className="text-lg font-semibold text-amber-500">
                     <AnimatedCounter value={mockLeaderboard[2].totalScore} />
                   </div>
-                  <div className="text-xs text-cyber-600 mt-1">points</div>
+                  <div className="text-xs text-slate-500 mt-1">points</div>
                 </div>
               </div>
 
@@ -266,18 +253,18 @@ export default function LeaderboardPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
                     <div className="flex items-center justify-center w-14 h-14 bg-gradient-to-br from-cyber-600 to-cyber-800 rounded-full border-2 border-cyber-500/50 shadow-lg">
-                      <span className="text-lg font-bold text-cyber-200">#{userEntry.rank}</span>
+                      <span className="text-lg font-bold text-white">#{userEntry.rank}</span>
                     </div>
                     <div>
-                      <div className="font-semibold text-cyber-100 text-lg">{userEntry.displayName}</div>
-                      <div className="text-sm text-cyber-500">Level {userEntry.level} • {getLevelTitle(userEntry.level)}</div>
+                      <div className="font-semibold text-white text-lg">{userEntry.displayName}</div>
+                      <div className="text-sm text-slate-400">Level {userEntry.level} • {getLevelTitle(userEntry.level)}</div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-2xl font-bold text-cyber-200">
+                    <div className="text-2xl font-bold text-white">
                       <AnimatedCounter value={userEntry.totalScore} />
                     </div>
-                    <div className="text-sm text-cyber-500">points</div>
+                    <div className="text-sm text-slate-400">points</div>
                   </div>
                 </div>
               </div>
@@ -289,8 +276,8 @@ export default function LeaderboardPage() {
                     <Image src={stockImages.team} alt="Team" fill className="object-cover" sizes="40px" />
                   </div>
                   <div>
-                    <h2 className="font-semibold text-cyber-200 text-lg">Top Performers</h2>
-                    <p className="text-xs text-cyber-500">Ranked by total score</p>
+                    <h2 className="font-semibold text-white text-lg">Top Performers</h2>
+                    <p className="text-xs text-slate-400">Ranked by total score</p>
                   </div>
                 </div>
 
@@ -309,8 +296,8 @@ export default function LeaderboardPage() {
                           {getRankImage(entry.rank, 'md')}
                         </div>
                         <div>
-                          <div className="font-medium text-cyber-200">{entry.displayName}</div>
-                          <div className="text-xs text-cyber-500">
+                          <div className="font-medium text-white">{entry.displayName}</div>
+                          <div className="text-xs text-slate-400">
                             Level {entry.level} • {entry.modulesCompleted} modules
                           </div>
                         </div>
@@ -326,10 +313,10 @@ export default function LeaderboardPage() {
                           </div>
                         )}
                         <div className="text-right min-w-[80px]">
-                          <div className="font-semibold text-cyber-200">
+                          <div className="font-semibold text-white">
                             {entry.totalScore.toLocaleString()}
                           </div>
-                          <div className="text-xs text-cyber-500">points</div>
+                          <div className="text-xs text-slate-400">points</div>
                         </div>
                       </div>
                     </div>
@@ -343,28 +330,28 @@ export default function LeaderboardPage() {
                   <div className="relative w-12 h-12 mx-auto mb-3 rounded-xl overflow-hidden shadow-lg group-hover:scale-110 transition-transform">
                     <Image src={stockImages.growth} alt="Growth" fill className="object-cover" sizes="48px" />
                   </div>
-                  <div className="text-xl font-bold text-cyber-200">
+                  <div className="text-xl font-bold text-white">
                     <AnimatedCounter value={mockLeaderboard.reduce((sum, e) => sum + e.totalScore, 0)} />
                   </div>
-                  <div className="text-xs text-cyber-500 mt-1">Total Points Earned</div>
+                  <div className="text-xs text-slate-400 mt-1">Total Points Earned</div>
                 </div>
                 <div className="cyber-card p-5 text-center hover:bg-cyber-800/50 transition-colors group">
                   <div className="relative w-12 h-12 mx-auto mb-3 rounded-xl overflow-hidden shadow-lg group-hover:scale-110 transition-transform">
                     <Image src={stockImages.team} alt="Team" fill className="object-cover" sizes="48px" />
                   </div>
-                  <div className="text-xl font-bold text-cyber-200">
+                  <div className="text-xl font-bold text-white">
                     <AnimatedCounter value={mockLeaderboard.length} />
                   </div>
-                  <div className="text-xs text-cyber-500 mt-1">Active Trainees</div>
+                  <div className="text-xs text-slate-400 mt-1">Active Trainees</div>
                 </div>
                 <div className="cyber-card p-5 text-center hover:bg-cyber-800/50 transition-colors group">
                   <div className="relative w-12 h-12 mx-auto mb-3 rounded-xl overflow-hidden shadow-lg group-hover:scale-110 transition-transform">
                     <Image src={stockImages.fire} alt="Streak" fill className="object-cover" sizes="48px" />
                   </div>
-                  <div className="text-xl font-bold text-cyber-200">
+                  <div className="text-xl font-bold text-white">
                     <AnimatedCounter value={Math.max(...mockLeaderboard.map(e => e.streak))} />
                   </div>
-                  <div className="text-xs text-cyber-500 mt-1">Longest Streak</div>
+                  <div className="text-xs text-slate-400 mt-1">Longest Streak</div>
                 </div>
               </div>
             </>
