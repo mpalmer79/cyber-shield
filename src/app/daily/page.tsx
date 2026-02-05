@@ -137,30 +137,30 @@ function EmailRenderer({ scenario }: { scenario: TrainingScenario }) {
   let email = asEmail(scenario);
   return (
     <div className="cyber-card p-6">
-      <div className="border-b border-cyber-700/50 pb-4 mb-4">
+      <div className="border-b border-white/10 pb-4 mb-4">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center space-x-2">
-            <span className="text-cyber-400 text-sm">From:</span>
-            <span className="text-cyber-200 font-medium">{email.from}</span>
-            <span className="text-cyber-500 text-sm">&lt;{email.fromEmail}&gt;</span>
+            <span className="text-white/60 text-sm">From:</span>
+            <span className="text-white font-medium">{email.from}</span>
+            <span className="text-white/50 text-sm">&lt;{email.fromEmail}&gt;</span>
           </div>
         </div>
         <div className="flex items-center space-x-2 mb-2">
-          <span className="text-cyber-400 text-sm">To:</span>
-          <span className="text-cyber-300">{email.to}</span>
+          <span className="text-white/60 text-sm">To:</span>
+          <span className="text-white/80">{email.to}</span>
         </div>
         <div className="flex items-center space-x-2">
-          <span className="text-cyber-400 text-sm">Subject:</span>
-          <span className="text-cyber-100 font-semibold">{email.subject}</span>
+          <span className="text-white/60 text-sm">Subject:</span>
+          <span className="text-white font-semibold">{email.subject}</span>
         </div>
       </div>
-      <div className="bg-cyber-800/30 rounded-lg p-4">
-        <pre className="whitespace-pre-wrap text-cyber-200 font-sans text-sm leading-relaxed">
+      <div className="bg-white/[0.03] rounded-lg p-4">
+        <pre className="whitespace-pre-wrap text-white/90 font-sans text-sm leading-relaxed">
           {email.body}
         </pre>
         {email.attachments && email.attachments.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-cyber-700/50">
-            <span className="text-cyber-400 text-sm">Attachments: </span>
+          <div className="mt-4 pt-4 border-t border-white/10">
+            <span className="text-white/60 text-sm">Attachments: </span>
             <span className="text-yellow-400 text-sm">{email.attachments.join(', ')}</span>
           </div>
         )}
@@ -174,10 +174,10 @@ function SMSRenderer({ scenario }: { scenario: TrainingScenario }) {
   return (
     <div className="cyber-card p-6">
       <div className="max-w-sm mx-auto">
-        <div className="bg-cyber-800/50 rounded-2xl p-4">
-          <div className="text-center text-cyber-400 text-sm mb-3">{sms.sender}</div>
+        <div className="bg-white/[0.03] rounded-2xl p-4">
+          <div className="text-center text-white/60 text-sm mb-3">{sms.sender}</div>
           <div className="bg-green-600/20 border border-green-500/30 rounded-2xl rounded-tl-sm p-4">
-            <p className="text-cyber-100 text-sm">{sms.message}</p>
+            <p className="text-white text-sm">{sms.message}</p>
           </div>
         </div>
       </div>
@@ -218,8 +218,8 @@ function ConversationRenderer({
 
   return (
     <div className="cyber-card p-6">
-      <div className="bg-cyber-800/30 rounded-lg p-4 mb-4">
-        <p className="text-cyber-300 italic">{contextText}</p>
+      <div className="bg-white/[0.03] rounded-lg p-4 mb-4">
+        <p className="text-white/80 italic">{contextText}</p>
       </div>
       <div className="space-y-3 mb-6">
         {lines.map((line, idx) => (
@@ -227,10 +227,10 @@ function ConversationRenderer({
             "p-3 rounded-lg",
             line.speaker === 'caller' || line.speaker === 'stranger'
               ? "bg-red-500/10 border border-red-500/20 ml-0 mr-12"
-              : "bg-cyber-500/10 border border-cyber-500/20 ml-12 mr-0"
+              : "bg-white/[0.05] border border-white/10 ml-12 mr-0"
           )}>
-            <span className="text-xs text-cyber-400 uppercase mb-1 block">{speakerLabel}</span>
-            <p className="text-cyber-200 text-sm">{line.text}</p>
+            <span className="text-xs text-white/60 uppercase mb-1 block">{speakerLabel}</span>
+            <p className="text-white/90 text-sm">{line.text}</p>
           </div>
         ))}
       </div>
@@ -247,7 +247,7 @@ function URLEvaluationRenderer({
   let content = asURLEvaluation(scenario);
   return (
     <div className="cyber-card p-6">
-      <p className="text-cyber-300 mb-6">{content.instruction}</p>
+      <p className="text-white/80 mb-6">{content.instruction}</p>
       <div className="space-y-3">
         {content.urls.map((urlOpt: URLOption) => (
           <button
@@ -261,14 +261,14 @@ function URLEvaluationRenderer({
                   ? "bg-green-500/20 border-2 border-green-500"
                   : selectedAnswer === urlOpt.id
                     ? "bg-red-500/20 border-2 border-red-500"
-                    : "bg-cyber-800/30 border border-cyber-700/50 opacity-50"
+                    : "bg-white/[0.03] border border-white/10 opacity-50"
                 : selectedAnswer === urlOpt.id
                   ? "bg-cyber-600/30 border-2 border-cyber-500"
-                  : "bg-cyber-800/30 border border-cyber-700/50 hover:border-cyber-500/50 hover:bg-cyber-700/30"
+                  : "bg-white/[0.03] border border-white/10 hover:border-white/20 hover:bg-white/[0.05]"
             )}
           >
             <div className="flex items-center justify-between">
-              <span className="text-cyber-200">{urlOpt.url}</span>
+              <span className="text-white/90">{urlOpt.url}</span>
               {showResult && (
                 urlOpt.safe
                   ? <CheckCircle className="h-5 w-5 text-green-400" />
@@ -293,7 +293,7 @@ function PasswordEvaluationRenderer({
   let content = asPasswordEvaluation(scenario);
   return (
     <div className="cyber-card p-6">
-      <p className="text-cyber-300 mb-6">{content.instruction}</p>
+      <p className="text-white/80 mb-6">{content.instruction}</p>
       <div className="space-y-3">
         {content.passwords.map((pwd: PasswordOption) => (
           <button
@@ -307,14 +307,14 @@ function PasswordEvaluationRenderer({
                   ? "bg-green-500/20 border-2 border-green-500"
                   : selectedAnswer === pwd.id
                     ? "bg-red-500/20 border-2 border-red-500"
-                    : "bg-cyber-800/30 border border-cyber-700/50 opacity-50"
+                    : "bg-white/[0.03] border border-white/10 opacity-50"
                 : selectedAnswer === pwd.id
                   ? "bg-cyber-600/30 border-2 border-cyber-500"
-                  : "bg-cyber-800/30 border border-cyber-700/50 hover:border-cyber-500/50 hover:bg-cyber-700/30"
+                  : "bg-white/[0.03] border border-white/10 hover:border-white/20 hover:bg-white/[0.05]"
             )}
           >
             <div className="flex items-center justify-between">
-              <code className="text-cyber-200 bg-cyber-900/50 px-2 py-1 rounded">{pwd.password}</code>
+              <code className="text-white/90 bg-white/[0.05] px-2 py-1 rounded">{pwd.password}</code>
               <span className={cn(
                 "text-xs px-2 py-1 rounded-full",
                 pwd.strength === 'strong' ? "bg-green-500/20 text-green-400" :
@@ -339,8 +339,8 @@ function MultipleChoiceRenderer({
   let content = asMultipleChoice(scenario);
   return (
     <div className="cyber-card p-6">
-      <p className="text-cyber-300 mb-4">{content.scenario}</p>
-      <p className="text-cyber-100 font-medium mb-6">{content.question}</p>
+      <p className="text-white/80 mb-4">{content.scenario}</p>
+      <p className="text-white font-medium mb-6">{content.question}</p>
       <OptionsRenderer options={content.options} onAnswer={onAnswer} selectedAnswer={selectedAnswer} showResult={showResult} />
     </div>
   );
@@ -365,15 +365,15 @@ function OptionsRenderer({
                 ? "bg-green-500/20 border-2 border-green-500"
                 : selectedAnswer === option.id
                   ? "bg-red-500/20 border-2 border-red-500"
-                  : "bg-cyber-800/30 border border-cyber-700/50 opacity-50"
+                  : "bg-white/[0.03] border border-white/10 opacity-50"
               : selectedAnswer === option.id
                 ? "bg-cyber-600/30 border-2 border-cyber-500"
-                : "bg-cyber-800/30 border border-cyber-700/50 hover:border-cyber-500/50 hover:bg-cyber-700/30"
+                : "bg-white/[0.03] border border-white/10 hover:border-white/20 hover:bg-white/[0.05]"
           )}
         >
           <div className="flex items-start space-x-3">
-            <span className="text-cyber-400 font-medium">{option.id.toUpperCase()}.</span>
-            <span className="text-cyber-200">{option.text}</span>
+            <span className="text-white/60 font-medium">{option.id.toUpperCase()}.</span>
+            <span className="text-white/90">{option.text}</span>
             {showResult && option.isCorrect && (
               <CheckCircle className="h-5 w-5 text-green-400 ml-auto flex-shrink-0" />
             )}
@@ -395,16 +395,16 @@ function PhishingJudgmentButtons({ onAnswer }: { onAnswer: (answer: string) => v
         className="cyber-card p-6 text-center hover:bg-red-500/10 hover:border-red-500/50 transition-all group"
       >
         <AlertTriangle className="h-10 w-10 text-red-400 mx-auto mb-3 group-hover:scale-110 transition-transform" />
-        <span className="text-lg font-semibold text-cyber-100">This is Phishing</span>
-        <p className="text-sm text-cyber-400 mt-1">This looks suspicious</p>
+        <span className="text-lg font-semibold text-white">This is Phishing</span>
+        <p className="text-sm text-white/60 mt-1">This looks suspicious</p>
       </button>
       <button
         onClick={() => onAnswer('legitimate')}
         className="cyber-card p-6 text-center hover:bg-green-500/10 hover:border-green-500/50 transition-all group"
       >
         <CheckCircle className="h-10 w-10 text-green-400 mx-auto mb-3 group-hover:scale-110 transition-transform" />
-        <span className="text-lg font-semibold text-cyber-100">This is Legitimate</span>
-        <p className="text-sm text-cyber-400 mt-1">This looks safe</p>
+        <span className="text-lg font-semibold text-white">This is Legitimate</span>
+        <p className="text-sm text-white/60 mt-1">This looks safe</p>
       </button>
     </div>
   );
@@ -453,7 +453,7 @@ function WatermarkCard({
           src={imageUrl}
           alt=""
           fill
-          className="object-cover opacity-[0.07]"
+          className="object-cover opacity-[0.18]"
           sizes="400px"
         />
       </div>
@@ -874,9 +874,8 @@ export default function DailyChallengePage() {
                 overlayTo="to-[#111827]/90"
               >
                 <div className="p-6">
-                  <h3 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
-                    <Target className="h-5 w-5 text-blue-400" />
-                    <span>30-Day Accuracy</span>
+                  <h3 className="text-lg font-semibold text-white mb-4">
+                    30-Day Accuracy
                   </h3>
                   <div className="flex items-center justify-center mb-4">
                     <div className="relative w-32 h-32">
@@ -911,9 +910,8 @@ export default function DailyChallengePage() {
                 overlayTo="to-[#1a1025]/90"
               >
                 <div className="p-6">
-                  <h3 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
-                    <Award className="h-5 w-5 text-amber-400" />
-                    <span>Streak Badges</span>
+                  <h3 className="text-lg font-semibold text-white mb-4">
+                    Streak Badges
                   </h3>
                   <div className="space-y-3">
                     {badgeStatus.map((badge) => (
@@ -961,9 +959,8 @@ export default function DailyChallengePage() {
                 overlayTo="to-[#0f1720]/90"
               >
                 <div className="p-6">
-                  <h3 className="text-lg font-semibold text-white mb-3 flex items-center space-x-2">
-                    <Lightbulb className="h-5 w-5 text-amber-400" />
-                    <span>Streak Tips</span>
+                  <h3 className="text-lg font-semibold text-white mb-3">
+                    Streak Tips
                   </h3>
                   <ul className="space-y-2.5 text-sm text-gray-400">
                     <li className="flex items-start space-x-2.5">
