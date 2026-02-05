@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { 
@@ -31,6 +32,7 @@ const featureImages = {
 };
 
 export default function HomePage() {
+  const router = useRouter();
   const { modules } = useModulesStore();
   const { progress } = useProgressStore();
   
@@ -168,15 +170,15 @@ export default function HomePage() {
             <div className="flex flex-wrap items-center gap-8 text-sm text-cyber-400">
               <div className="flex items-center space-x-2">
                 <CheckCircle className="h-5 w-5 text-green-400" />
-                <span>Enterprise Ready</span>
+                <span>Enterprise Architecture</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Shield className="h-5 w-5 text-cyber-400" />
-                <span>SOC 2 Compliant</span>
+                <span>Adaptive AI Engine</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Users className="h-5 w-5 text-blue-400" />
-                <span>10,000+ Users Trained</span>
+                <span>8 Training Modules</span>
               </div>
             </div>
           </div>
@@ -281,7 +283,7 @@ export default function HomePage() {
                 <ModuleCard
                   key={module.id}
                   module={module}
-                  onClick={() => window.location.href = `/training/${module.id}`}
+                  onClick={() => router.push(`/training/${module.id}`)}
                 />
               ))}
             </div>
@@ -346,7 +348,7 @@ export default function HomePage() {
                     key={module.id}
                     module={module}
                     variant="compact"
-                    onClick={() => window.location.href = `/training/${module.id}`}
+                    onClick={() => router.push(`/training/${module.id}`)}
                   />
                 ))}
               </div>
@@ -392,7 +394,7 @@ export default function HomePage() {
             </nav>
 
             <div className="text-sm text-cyber-600">
-              © 2024 CyberShield. All rights reserved.
+              © 2026 CyberShield. All rights reserved.
             </div>
           </div>
         </div>
