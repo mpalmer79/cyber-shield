@@ -15,17 +15,21 @@ import {
   Shield,
   AlertTriangle,
   Palette,
-  Play
+  Play,
+  Flame,
+  Calendar
 } from 'lucide-react';
 import { Header, ThemeToggle, useTheme, useToast, InteractiveButton, useSoundEffect, useOnboarding } from '@/components';
-import { useSettingsStore, useProgressStore } from '@/store';
+import { useSettingsStore, useProgressStore, useDailyChallengeStore } from '@/store';
 import { cn } from '@/lib/utils';
 import type { DifficultyLevel } from '@/types';
 
 export default function SettingsPage() {
   const { settings, updateSettings, resetSettings } = useSettingsStore();
   const { resetProgress } = useProgressStore();
+  const { resetTodaysChallenge, resetAllDailyProgress, currentStreak, todayCompleted } = useDailyChallengeStore();
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [showDailyResetConfirm, setShowDailyResetConfirm] = useState(false);
   const toast = useToast();
   const playSound = useSoundEffect();
   const { resetOnboarding } = useOnboarding();
@@ -47,9 +51,23 @@ export default function SettingsPage() {
   const handleResetProgress = () => {
     resetProgress();
     resetSettings();
+    resetAllDailyProgress();
     setShowResetConfirm(false);
     playSound('notification');
     toast.info('All progress has been reset');
+  };
+
+  const handleResetTodaysChallenge = () => {
+    resetTodaysChallenge();
+    playSound('notification');
+    toast.success('Today\'s challenge has been reset. You can try again!');
+  };
+
+  const handleResetAllDaily = () => {
+    resetAllDailyProgress();
+    setShowDailyResetConfirm(false);
+    playSound('notification');
+    toast.info('All daily challenge progress has been reset');
   };
 
   const handleReplayOnboarding = () => {
@@ -221,6 +239,93 @@ export default function SettingsPage() {
                     </div>
                   </div>
                   <ThemeToggle variant="switch" />
+                </div>
+              </div>
+            </div>
+
+            {/* Daily Challenge Section */}
+            <div className="cyber-card p-6">
+              <h2 className="text-lg font-semibold text-cyber-200 mb-4 flex items-center space-x-2">
+                <Flame className="h-5 w-5 text-orange-400" />
+                <span>Daily Challenge</span>
+              </h2>
+
+              <div className="space-y-4">
+                {/* Current Status */}
+                <div className="flex items-center justify-between p-3 bg-cyber-800/30 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <Calendar className="h-5 w-5 text-cyber-500" />
+                    <div>
+                      <div className="font-medium text-cyber-200">Today's Status</div>
+                      <div className="text-xs text-cyber-500">
+                        {todayCompleted ? 'Completed' : 'Not started'} • {currentStreak} day streak
+                      </div>
+                    </div>
+                  </div>
+                  <span className={cn(
+                    "px-2 py-1 text-xs rounded-full",
+                    todayCompleted 
+                      ? "bg-emerald-500/20 text-emerald-400" 
+                      : "bg-amber-500/20 text-amber-400"
+                  )}>
+                    {todayCompleted ? '✓ Done' : 'Pending'}
+                  </span>
+                </div>
+
+                {/* Reset Today Button */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-start space-x-3">
+                    <RotateCcw className="h-5 w-5 text-cyber-500 mt-0.5" />
+                    <div>
+                      <div className="font-medium text-cyber-200">Retry Today's Challenge</div>
+                      <div className="text-xs text-cyber-500">Reset today's attempt (keeps streak & history)</div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleResetTodaysChallenge}
+                    disabled={!todayCompleted}
+                    className={cn(
+                      "px-4 py-2 text-sm font-medium rounded-lg transition-colors",
+                      todayCompleted
+                        ? "bg-orange-500/20 text-orange-400 hover:bg-orange-500/30 border border-orange-500/30"
+                        : "bg-cyber-800/50 text-cyber-600 cursor-not-allowed"
+                    )}
+                  >
+                    Reset Today
+                  </button>
+                </div>
+
+                {/* Reset All Daily Progress */}
+                <div className="pt-4 border-t border-cyber-800">
+                  {!showDailyResetConfirm ? (
+                    <button
+                      onClick={() => setShowDailyResetConfirm(true)}
+                      className="flex items-center space-x-2 text-sm text-amber-400 hover:text-amber-300 transition-colors"
+                    >
+                      <AlertTriangle className="h-4 w-4" />
+                      <span>Reset All Daily Progress</span>
+                    </button>
+                  ) : (
+                    <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4">
+                      <p className="text-sm text-amber-300 mb-3">
+                        This will reset your streak, badges, and daily challenge history. Continue?
+                      </p>
+                      <div className="flex space-x-3">
+                        <button
+                          onClick={handleResetAllDaily}
+                          className="px-4 py-2 text-sm bg-amber-600 hover:bg-amber-500 text-white rounded-lg transition-colors"
+                        >
+                          Yes, Reset Daily
+                        </button>
+                        <button
+                          onClick={() => setShowDailyResetConfirm(false)}
+                          className="px-4 py-2 text-sm bg-cyber-800 hover:bg-cyber-700 text-cyber-300 rounded-lg transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
