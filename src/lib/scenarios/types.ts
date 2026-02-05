@@ -113,31 +113,31 @@ export interface TrainingScenario {
 // Use them at the top of render branches for clean typed access.
 
 export function asEmail(scenario: TrainingScenario): EmailContent {
-  return scenario.content as EmailContent;
+  return scenario.content as unknown as EmailContent;
 }
 
 export function asSMS(scenario: TrainingScenario): SMSContent {
-  return scenario.content as SMSContent;
+  return scenario.content as unknown as SMSContent;
 }
 
 export function asPhoneCall(scenario: TrainingScenario): PhoneCallContent {
-  return scenario.content as PhoneCallContent;
+  return scenario.content as unknown as PhoneCallContent;
 }
 
 export function asInPerson(scenario: TrainingScenario): InPersonContent {
-  return scenario.content as InPersonContent;
+  return scenario.content as unknown as InPersonContent;
 }
 
 export function asURLEvaluation(scenario: TrainingScenario): URLEvaluationContent {
-  return scenario.content as URLEvaluationContent;
+  return scenario.content as unknown as URLEvaluationContent;
 }
 
 export function asPasswordEvaluation(scenario: TrainingScenario): PasswordEvaluationContent {
-  return scenario.content as PasswordEvaluationContent;
+  return scenario.content as unknown as PasswordEvaluationContent;
 }
 
 export function asMultipleChoice(scenario: TrainingScenario): MultipleChoiceContent {
-  return scenario.content as MultipleChoiceContent;
+  return scenario.content as unknown as MultipleChoiceContent;
 }
 
 // -- Content Type Guards --
