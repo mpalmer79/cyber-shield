@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
   Shield, 
@@ -12,10 +12,11 @@ import {
   BarChart3, 
   Settings,
   User,
-  Github
+  Github,
+  Flame
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useProgressStore } from '@/store';
+import { useProgressStore, useDailyChallengeStore } from '@/store';
 
 // LinkedIn SVG Icon Component
 const LinkedInIcon = ({ className }: { className?: string }) => (
@@ -35,9 +36,16 @@ interface HeaderProps {
 export default function Header({ currentPage = 'dashboard' }: HeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { progress } = useProgressStore();
+  const { currentStreak, todayCompleted } = useDailyChallengeStore();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home, href: '/' },
+    { id: 'daily', label: 'Daily', icon: Flame, href: '/daily' },
     { id: 'training', label: 'Training', icon: BookOpen, href: '/training' },
     { id: 'progress', label: 'Progress', icon: BarChart3, href: '/progress' },
     { id: 'leaderboard', label: 'Leaderboard', icon: Trophy, href: '/leaderboard' },
@@ -89,14 +97,36 @@ export default function Header({ currentPage = 'dashboard' }: HeaderProps) {
                 key={item.id}
                 href={item.href}
                 className={cn(
-                  'flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200',
+                  'flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 relative',
                   currentPage === item.id
                     ? 'bg-cyber-800/50 text-cyber-300'
-                    : 'text-cyber-400 hover:text-cyber-300 hover:bg-cyber-800/30'
+                    : 'text-cyber-400 hover:text-cyber-300 hover:bg-cyber-800/30',
+                  item.id === 'daily' && !todayCompleted && mounted && 'text-orange-400 hover:text-orange-300'
                 )}
               >
-                <item.icon className="h-4 w-4" />
+                <item.icon className={cn(
+                  "h-4 w-4",
+                  item.id === 'daily' && !todayCompleted && mounted && "text-orange-400"
+                )} />
                 <span>{item.label}</span>
+                {/* Streak badge on Daily nav */}
+                {item.id === 'daily' && mounted && currentStreak > 0 && (
+                  <span className={cn(
+                    "flex items-center space-x-1 px-1.5 py-0.5 rounded-full text-xs font-bold",
+                    currentStreak >= 7
+                      ? "bg-orange-500/20 text-orange-400"
+                      : currentStreak >= 3
+                        ? "bg-yellow-500/20 text-yellow-400"
+                        : "bg-cyber-700/50 text-cyber-300"
+                  )}>
+                    <Flame className="h-3 w-3" />
+                    <span>{currentStreak}</span>
+                  </span>
+                )}
+                {/* Pulsing dot for uncompleted daily */}
+                {item.id === 'daily' && mounted && !todayCompleted && (
+                  <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-orange-400 rounded-full animate-pulse" />
+                )}
               </Link>
             ))}
           </nav>
@@ -173,6 +203,16 @@ export default function Header({ currentPage = 'dashboard' }: HeaderProps) {
                 >
                   <item.icon className="h-5 w-5" />
                   <span>{item.label}</span>
+                  {/* Mobile streak badge */}
+                  {item.id === 'daily' && mounted && currentStreak > 0 && (
+                    <span className="flex items-center space-x-1 px-2 py-0.5 rounded-full text-xs font-bold bg-orange-500/20 text-orange-400 ml-auto">
+                      <Flame className="h-3 w-3" />
+                      <span>{currentStreak}</span>
+                    </span>
+                  )}
+                  {item.id === 'daily' && mounted && !todayCompleted && (
+                    <span className="w-2 h-2 bg-orange-400 rounded-full animate-pulse ml-auto" />
+                  )}
                 </Link>
               ))}
               
