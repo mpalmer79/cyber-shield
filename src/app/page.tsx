@@ -18,6 +18,7 @@ import {
   CheckCircle
 } from 'lucide-react';
 import { Header, ModuleCard, FeatureCard, ProgressStats } from '@/components';
+import ThreatTerminal from '@/components/ThreatTerminal';
 import { useModulesStore, useProgressStore } from '@/store';
 import { cn } from '@/lib/utils';
 
@@ -126,60 +127,67 @@ export default function HomePage() {
         <div className="absolute bottom-1/4 left-1/3 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
 
         <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-3xl">
-            {/* Badge */}
-            <div className="inline-flex items-center space-x-2 px-4 py-2 bg-cyber-500/10 backdrop-blur-sm rounded-full border border-cyber-500/30 mb-8">
-              <div className="w-2 h-2 bg-cyber-400 rounded-full animate-pulse" />
-              <span className="text-sm text-cyber-300 font-medium">AI-Powered Security Training</span>
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="max-w-2xl">
+              {/* Badge */}
+              <div className="inline-flex items-center space-x-2 px-4 py-2 bg-cyber-500/10 backdrop-blur-sm rounded-full border border-cyber-500/30 mb-8">
+                <div className="w-2 h-2 bg-cyber-400 rounded-full animate-pulse" />
+                <span className="text-sm text-cyber-300 font-medium">AI-Powered Security Training</span>
+              </div>
+
+              {/* Headline */}
+              <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
+                Train Your Team to
+                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-cyber-400 via-cyan-400 to-cyber-400">
+                  Defeat Cyber Threats
+                </span>
+              </h1>
+
+              {/* Subheadline */}
+              <p className="text-xl text-cyber-200/80 mb-10 max-w-2xl leading-relaxed">
+                Interactive, AI-driven training that transforms your employees into your strongest 
+                line of defense against phishing, social engineering, and cyber attacks.
+              </p>
+
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-12">
+                <Link
+                  href="/training"
+                  className="group flex items-center space-x-3 px-8 py-4 bg-cyber-500 hover:bg-cyber-400 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-cyber-500/30 hover:shadow-cyber-500/50"
+                >
+                  <Play className="h-5 w-5" />
+                  <span>Start Training</span>
+                  <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+                </Link>
+                <Link
+                  href="/progress"
+                  className="flex items-center space-x-3 px-8 py-4 bg-white/5 hover:bg-white/10 text-white font-medium rounded-xl transition-all duration-300 border border-white/10 hover:border-white/20 backdrop-blur-sm"
+                >
+                  <TrendingUp className="h-5 w-5 text-cyber-400" />
+                  <span>View Progress</span>
+                </Link>
+              </div>
+
+              {/* Trust Indicators */}
+              <div className="flex flex-wrap items-center gap-8 text-sm text-cyber-400">
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="h-5 w-5 text-green-400" />
+                  <span>Enterprise Architecture</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Shield className="h-5 w-5 text-cyber-400" />
+                  <span>Adaptive AI Engine</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Users className="h-5 w-5 text-blue-400" />
+                  <span>8 Training Modules</span>
+                </div>
+              </div>
             </div>
 
-            {/* Headline */}
-            <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
-              Train Your Team to
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-cyber-400 via-cyan-400 to-cyber-400">
-                Defeat Cyber Threats
-              </span>
-            </h1>
-
-            {/* Subheadline */}
-            <p className="text-xl text-cyber-200/80 mb-10 max-w-2xl leading-relaxed">
-              Interactive, AI-driven training that transforms your employees into your strongest 
-              line of defense against phishing, social engineering, and cyber attacks.
-            </p>
-
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-12">
-              <Link
-                href="/training"
-                className="group flex items-center space-x-3 px-8 py-4 bg-cyber-500 hover:bg-cyber-400 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-cyber-500/30 hover:shadow-cyber-500/50"
-              >
-                <Play className="h-5 w-5" />
-                <span>Start Training</span>
-                <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
-              </Link>
-              <Link
-                href="/progress"
-                className="flex items-center space-x-3 px-8 py-4 bg-white/5 hover:bg-white/10 text-white font-medium rounded-xl transition-all duration-300 border border-white/10 hover:border-white/20 backdrop-blur-sm"
-              >
-                <TrendingUp className="h-5 w-5 text-cyber-400" />
-                <span>View Progress</span>
-              </Link>
-            </div>
-
-            {/* Trust Indicators */}
-            <div className="flex flex-wrap items-center gap-8 text-sm text-cyber-400">
-              <div className="flex items-center space-x-2">
-                <CheckCircle className="h-5 w-5 text-green-400" />
-                <span>Enterprise Architecture</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Shield className="h-5 w-5 text-cyber-400" />
-                <span>Adaptive AI Engine</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Users className="h-5 w-5 text-blue-400" />
-                <span>8 Training Modules</span>
-              </div>
+            {/* Threat Terminal - right column */}
+            <div className="hidden lg:flex justify-end">
+              <ThreatTerminal />
             </div>
           </div>
         </div>
@@ -394,7 +402,7 @@ export default function HomePage() {
             </nav>
 
             <div className="text-sm text-cyber-600">
-              © 2026 CyberShield. All rights reserved.
+              © 2025 CyberShield. All rights reserved.
             </div>
           </div>
         </div>
