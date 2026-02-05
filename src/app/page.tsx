@@ -15,11 +15,13 @@ import {
   Users,
   Award,
   Clock,
-  CheckCircle
+  CheckCircle,
+  Monitor,
 } from 'lucide-react';
 import { Header, ModuleCard, FeatureCard, ProgressStats } from '@/components';
 import ThreatTerminal from '@/components/ThreatTerminal';
 import { useModulesStore, useProgressStore } from '@/store';
+import { useDemoStore } from '@/store/demo-store';
 import { cn } from '@/lib/utils';
 
 // Professional stock images for features
@@ -36,6 +38,13 @@ export default function HomePage() {
   const router = useRouter();
   const { modules } = useModulesStore();
   const { progress } = useProgressStore();
+  const { enableDemo } = useDemoStore();
+  
+  // Launch demo mode and navigate to phishing training
+  const handleTryDemo = () => {
+    enableDemo();
+    router.push('/training/phishing-101');
+  };
   
   // Get recommended modules (available, not completed)
   const recommendedModules = modules
@@ -150,7 +159,7 @@ export default function HomePage() {
               </p>
 
               {/* CTA Buttons */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-12">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-6">
                 <Link
                   href="/training"
                   className="group flex items-center space-x-3 px-8 py-4 bg-cyber-500 hover:bg-cyber-400 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-cyber-500/30 hover:shadow-cyber-500/50"
@@ -167,6 +176,26 @@ export default function HomePage() {
                   <span>View Progress</span>
                 </Link>
               </div>
+
+              {/* Try Demo CTA — recruiter-focused, no API key needed */}
+              <button
+                onClick={handleTryDemo}
+                className="group inline-flex items-center space-x-3 px-6 py-3 mb-12 bg-gradient-to-r from-amber-500/20 to-orange-500/20 hover:from-amber-500/30 hover:to-orange-500/30 border border-amber-500/40 hover:border-amber-400/60 rounded-xl transition-all duration-300 backdrop-blur-sm"
+              >
+                <div className="relative">
+                  <Monitor className="h-5 w-5 text-amber-400" />
+                  <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
+                </div>
+                <div className="text-left">
+                  <span className="text-sm font-semibold text-amber-300 group-hover:text-amber-200 transition-colors">
+                    Try Live Demo
+                  </span>
+                  <span className="text-xs text-amber-300/60 ml-2">
+                    No API key required
+                  </span>
+                </div>
+                <ArrowRight className="h-4 w-4 text-amber-400/60 group-hover:text-amber-400 transition-all group-hover:translate-x-1" />
+              </button>
 
               {/* Trust Indicators */}
               <div className="flex flex-wrap items-center gap-8 text-sm text-slate-300">
