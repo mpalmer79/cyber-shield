@@ -9,15 +9,19 @@ import {
   CheckCircle,
   Lock,
   Clock,
-  X
+  X,
+  LayoutGrid,
+  GitBranch,
 } from 'lucide-react';
 import { Header, ModuleCard, ModuleGridSkeleton, NoSearchResults, useToast, useSoundEffect } from '@/components';
+import SkillTree from '@/components/SkillTree';
 import { useModulesStore } from '@/store';
 import { cn } from '@/lib/utils';
 import type { TrainingModule, DifficultyLevel, ModuleStatus } from '@/types';
 
 type FilterDifficulty = DifficultyLevel | 'all';
 type FilterStatus = ModuleStatus | 'all';
+type ViewMode = 'tree' | 'grid';
 
 export default function TrainingPage() {
   const router = useRouter();
@@ -29,6 +33,7 @@ export default function TrainingPage() {
   const [difficultyFilter, setDifficultyFilter] = useState<FilterDifficulty>('all');
   const [statusFilter, setStatusFilter] = useState<FilterStatus>('all');
   const [isLoading, setIsLoading] = useState(true);
+  const [viewMode, setViewMode] = useState<ViewMode>('tree');
 
   // Simulate loading state
   useEffect(() => {
@@ -85,6 +90,10 @@ export default function TrainingPage() {
     playSound('click');
   };
 
+  // When filters are active, force grid view since tree shows all modules
+  let hasFilters = searchQuery || difficultyFilter !== 'all' || statusFilter !== 'all';
+  let activeView = hasFilters ? 'grid' : viewMode;
+
   const difficulties: { value: FilterDifficulty; label: string }[] = [
     { value: 'all', label: 'All Levels' },
     { value: 'beginner', label: 'Beginner' },
@@ -108,154 +117,225 @@ export default function TrainingPage() {
       <main className="py-8 px-4">
         <div className="container mx-auto">
           {/* Page Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-cyber-100 mb-2">Training Modules</h1>
-            <p className="text-cyber-400">
-              Choose a module to begin your cybersecurity training journey.
-            </p>
-          </div>
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-8 gap-4">
+            <div>
+              <h1 className="text-3xl font-bold text-cyber-100 mb-2">Training Modules</h1>
+              <p className="text-cyber-400">
+                {activeView === 'tree'
+                  ? 'Follow the skill tree to master cybersecurity from foundation to advanced.'
+                  : 'Choose a module to begin your cybersecurity training journey.'}
+              </p>
+            </div>
 
-          {/* Filters */}
-          <div className="cyber-card p-4 mb-8">
-            <div className="flex flex-col lg:flex-row gap-4">
-              {/* Search */}
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cyber-500" />
-                <input
-                  type="text"
-                  placeholder="Search modules..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="cyber-input pl-10 pr-10"
-                />
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery('')}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-cyber-700 rounded-full transition-colors"
-                  >
-                    <X className="h-4 w-4 text-cyber-500" />
-                  </button>
+            {/* View Toggle */}
+            <div className="flex items-center bg-cyber-900/80 border border-cyber-700/50 rounded-lg p-1">
+              <button
+                onClick={() => {
+                  setViewMode('tree');
+                  playSound('click');
+                }}
+                className={cn(
+                  "flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200",
+                  activeView === 'tree'
+                    ? "bg-cyber-700/50 text-cyber-200 shadow-sm"
+                    : "text-cyber-500 hover:text-cyber-300"
                 )}
-              </div>
+              >
+                <GitBranch className="h-4 w-4" />
+                <span>Skill Tree</span>
+              </button>
+              <button
+                onClick={() => {
+                  setViewMode('grid');
+                  playSound('click');
+                }}
+                className={cn(
+                  "flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200",
+                  activeView === 'grid'
+                    ? "bg-cyber-700/50 text-cyber-200 shadow-sm"
+                    : "text-cyber-500 hover:text-cyber-300"
+                )}
+              >
+                <LayoutGrid className="h-4 w-4" />
+                <span>Grid</span>
+              </button>
+            </div>
+          </div>
 
-              {/* Difficulty Filter */}
-              <div className="flex items-center space-x-2">
-                <Filter className="h-4 w-4 text-cyber-500" />
-                <select
-                  value={difficultyFilter}
-                  onChange={(e) => {
-                    setDifficultyFilter(e.target.value as FilterDifficulty);
-                    playSound('click');
-                  }}
-                  className="cyber-input py-2"
-                >
-                  {difficulties.map((d) => (
-                    <option key={d.value} value={d.value}>
-                      {d.label}
-                    </option>
+          {/* Skill Tree View */}
+          {activeView === 'tree' && !isLoading && (
+            <div className="cyber-card p-6 md:p-8 mb-8">
+              <SkillTree modules={modules} onModuleClick={handleModuleClick} />
+            </div>
+          )}
+
+          {/* Grid View (with filters) */}
+          {activeView === 'grid' && (
+            <>
+              {/* Filters */}
+              <div className="cyber-card p-4 mb-8">
+                <div className="flex flex-col lg:flex-row gap-4">
+                  {/* Search */}
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cyber-500" />
+                    <input
+                      type="text"
+                      placeholder="Search modules..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="cyber-input pl-10 pr-10"
+                    />
+                    {searchQuery && (
+                      <button
+                        onClick={() => setSearchQuery('')}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-cyber-700 rounded-full transition-colors"
+                      >
+                        <X className="h-4 w-4 text-cyber-500" />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Difficulty Filter */}
+                  <div className="flex items-center space-x-2">
+                    <Filter className="h-4 w-4 text-cyber-500" />
+                    <select
+                      value={difficultyFilter}
+                      onChange={(e) => {
+                        setDifficultyFilter(e.target.value as FilterDifficulty);
+                        playSound('click');
+                      }}
+                      className="cyber-input py-2"
+                    >
+                      {difficulties.map((d) => (
+                        <option key={d.value} value={d.value}>
+                          {d.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Status Tabs */}
+                <div className="flex flex-wrap gap-2 mt-4">
+                  {statuses.map((status) => (
+                    <button
+                      key={status.value}
+                      onClick={() => {
+                        setStatusFilter(status.value);
+                        playSound('click');
+                      }}
+                      className={cn(
+                        'flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200',
+                        statusFilter === status.value
+                          ? 'bg-cyber-700/50 text-cyber-200 border border-cyber-600'
+                          : 'bg-cyber-800/30 text-cyber-400 border border-transparent hover:border-cyber-700'
+                      )}
+                    >
+                      <status.icon className="h-4 w-4" />
+                      <span>{status.label}</span>
+                    </button>
                   ))}
-                </select>
+                </div>
               </div>
-            </div>
 
-            {/* Status Tabs */}
-            <div className="flex flex-wrap gap-2 mt-4">
-              {statuses.map((status) => (
-                <button
-                  key={status.value}
-                  onClick={() => {
-                    setStatusFilter(status.value);
-                    playSound('click');
-                  }}
-                  className={cn(
-                    'flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200',
-                    statusFilter === status.value
-                      ? 'bg-cyber-700/50 text-cyber-200 border border-cyber-600'
-                      : 'bg-cyber-800/30 text-cyber-400 border border-transparent hover:border-cyber-700'
+              {/* Results Count */}
+              <div className="text-sm text-cyber-500 mb-6">
+                Showing {filteredModules.length} of {modules.length} modules
+              </div>
+
+              {/* Loading State */}
+              {isLoading ? (
+                <ModuleGridSkeleton count={6} />
+              ) : filteredModules.length === 0 ? (
+                /* Empty State */
+                <div className="cyber-card p-6">
+                  <NoSearchResults 
+                    query={searchQuery || undefined} 
+                    onClear={clearSearch}
+                  />
+                </div>
+              ) : (
+                /* Modules Grid */
+                <div className="space-y-8">
+                  {/* Available Modules */}
+                  {availableModules.length > 0 && (
+                    <section>
+                      <h2 className="text-lg font-semibold text-cyber-200 mb-4 flex items-center space-x-2">
+                        <Clock className="h-5 w-5 text-cyber-400" />
+                        <span>Available ({availableModules.length})</span>
+                      </h2>
+                      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {availableModules.map((module) => (
+                          <ModuleCard
+                            key={module.id}
+                            module={module}
+                            onClick={handleModuleClick}
+                          />
+                        ))}
+                      </div>
+                    </section>
                   )}
-                >
-                  <status.icon className="h-4 w-4" />
-                  <span>{status.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
 
-          {/* Results Count */}
-          <div className="text-sm text-cyber-500 mb-6">
-            Showing {filteredModules.length} of {modules.length} modules
-          </div>
+                  {/* Completed Modules */}
+                  {completedModules.length > 0 && (
+                    <section>
+                      <h2 className="text-lg font-semibold text-cyber-200 mb-4 flex items-center space-x-2">
+                        <CheckCircle className="h-5 w-5 text-green-400" />
+                        <span>Completed ({completedModules.length})</span>
+                      </h2>
+                      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {completedModules.map((module) => (
+                          <ModuleCard
+                            key={module.id}
+                            module={module}
+                            onClick={handleModuleClick}
+                          />
+                        ))}
+                      </div>
+                    </section>
+                  )}
 
-          {/* Loading State */}
-          {isLoading ? (
-            <ModuleGridSkeleton count={6} />
-          ) : filteredModules.length === 0 ? (
-            /* Empty State */
-            <div className="cyber-card p-6">
-              <NoSearchResults 
-                query={searchQuery || undefined} 
-                onClear={clearSearch}
-              />
-            </div>
-          ) : (
-            /* Modules Grid */
-            <div className="space-y-8">
-              {/* Available Modules */}
-              {availableModules.length > 0 && (
-                <section>
-                  <h2 className="text-lg font-semibold text-cyber-200 mb-4 flex items-center space-x-2">
-                    <Clock className="h-5 w-5 text-cyber-400" />
-                    <span>Available ({availableModules.length})</span>
-                  </h2>
-                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {availableModules.map((module) => (
-                      <ModuleCard
-                        key={module.id}
-                        module={module}
-                        onClick={handleModuleClick}
-                      />
-                    ))}
-                  </div>
-                </section>
+                  {/* Locked Modules */}
+                  {lockedModules.length > 0 && (
+                    <section>
+                      <h2 className="text-lg font-semibold text-cyber-200 mb-4 flex items-center space-x-2">
+                        <Lock className="h-5 w-5 text-gray-400" />
+                        <span>Locked ({lockedModules.length})</span>
+                      </h2>
+                      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {lockedModules.map((module) => (
+                          <ModuleCard
+                            key={module.id}
+                            module={module}
+                            onClick={handleModuleClick}
+                          />
+                        ))}
+                      </div>
+                    </section>
+                  )}
+                </div>
               )}
+            </>
+          )}
 
-              {/* Completed Modules */}
-              {completedModules.length > 0 && (
-                <section>
-                  <h2 className="text-lg font-semibold text-cyber-200 mb-4 flex items-center space-x-2">
-                    <CheckCircle className="h-5 w-5 text-green-400" />
-                    <span>Completed ({completedModules.length})</span>
-                  </h2>
-                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {completedModules.map((module) => (
-                      <ModuleCard
-                        key={module.id}
-                        module={module}
-                        onClick={handleModuleClick}
-                      />
-                    ))}
-                  </div>
-                </section>
-              )}
-
-              {/* Locked Modules */}
-              {lockedModules.length > 0 && (
-                <section>
-                  <h2 className="text-lg font-semibold text-cyber-200 mb-4 flex items-center space-x-2">
-                    <Lock className="h-5 w-5 text-gray-400" />
-                    <span>Locked ({lockedModules.length})</span>
-                  </h2>
-                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {lockedModules.map((module) => (
-                      <ModuleCard
-                        key={module.id}
-                        module={module}
-                        onClick={handleModuleClick}
-                      />
-                    ))}
-                  </div>
-                </section>
-              )}
+          {/* Loading state for tree view */}
+          {activeView === 'tree' && isLoading && (
+            <div className="cyber-card p-8">
+              <div className="animate-pulse space-y-8">
+                <div className="flex justify-center space-x-8">
+                  {[1, 2, 3, 4].map(i => (
+                    <div key={i} className="w-44 h-40 bg-cyber-800/50 rounded-xl" />
+                  ))}
+                </div>
+                <div className="flex justify-center space-x-12">
+                  {[1, 2, 3].map(i => (
+                    <div key={i} className="w-44 h-40 bg-cyber-800/30 rounded-xl" />
+                  ))}
+                </div>
+                <div className="flex justify-center">
+                  <div className="w-44 h-40 bg-cyber-800/20 rounded-xl" />
+                </div>
+              </div>
             </div>
           )}
         </div>
