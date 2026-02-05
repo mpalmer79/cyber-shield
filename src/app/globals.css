@@ -232,6 +232,57 @@
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
   }
+
+  /* ---- Skill Tree Animations ---- */
+
+  /* Breathing pulse for available/unlocked nodes */
+  .skill-tree-available-pulse {
+    animation: skillTreePulse 3s ease-in-out infinite;
+  }
+
+  @keyframes skillTreePulse {
+    0%, 100% { box-shadow: 0 0 8px rgba(20, 184, 166, 0.1); }
+    50% { box-shadow: 0 0 20px rgba(20, 184, 166, 0.25), 0 0 40px rgba(20, 184, 166, 0.08); }
+  }
+
+  /* Energy flow along completed connection paths */
+  .skill-tree-energy-flow {
+    stroke-dasharray: 8 80;
+    animation: energyFlow 2.5s linear infinite;
+  }
+
+  @keyframes energyFlow {
+    0% { stroke-dashoffset: 88; }
+    100% { stroke-dashoffset: 0; }
+  }
+
+  /* Shimmer sweep across completed module cards */
+  .skill-tree-shimmer {
+    background: linear-gradient(
+      110deg,
+      transparent 30%,
+      rgba(52, 211, 153, 0.08) 45%,
+      rgba(52, 211, 153, 0.15) 50%,
+      rgba(52, 211, 153, 0.08) 55%,
+      transparent 70%
+    );
+    animation: shimmerSweep 4s ease-in-out infinite;
+  }
+
+  @keyframes shimmerSweep {
+    0% { transform: translateX(-100%); }
+    50%, 100% { transform: translateX(200%); }
+  }
+
+  /* Background glow breathing for the tree environment */
+  .skill-tree-bg-pulse {
+    animation: bgPulse 6s ease-in-out infinite;
+  }
+
+  @keyframes bgPulse {
+    0%, 100% { opacity: 0.5; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.1); }
+  }
 }
 
 /* Custom scrollbar */
