@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { Header, ModuleCard, ModuleGridSkeleton, NoSearchResults, useToast, useSoundEffect } from '@/components';
 import SkillTree from '@/components/SkillTree';
+import type { BonusNode } from '@/components/SkillTree';
 import { useModulesStore } from '@/store';
 import { cn } from '@/lib/utils';
 import type { TrainingModule, DifficultyLevel, ModuleStatus } from '@/types';
@@ -22,6 +23,17 @@ import type { TrainingModule, DifficultyLevel, ModuleStatus } from '@/types';
 type FilterDifficulty = DifficultyLevel | 'all';
 type FilterStatus = ModuleStatus | 'all';
 type ViewMode = 'tree' | 'grid';
+
+// Persist bonus completion in localStorage
+function getCompletedBonuses(): Set<string> {
+  if (typeof window === 'undefined') return new Set();
+  try {
+    let stored = localStorage.getItem('cybershield-bonus-completed');
+    return stored ? new Set(JSON.parse(stored)) : new Set();
+  } catch {
+    return new Set();
+  }
+}
 
 export default function TrainingPage() {
   const router = useRouter();
@@ -34,16 +46,20 @@ export default function TrainingPage() {
   const [statusFilter, setStatusFilter] = useState<FilterStatus>('all');
   const [isLoading, setIsLoading] = useState(true);
   const [viewMode, setViewMode] = useState<ViewMode>('tree');
+  const [completedBonuses, setCompletedBonuses] = useState<Set<string>>(new Set());
 
-  // Simulate loading state
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 600);
     return () => clearTimeout(timer);
   }, []);
 
+  // Load bonus completion state
+  useEffect(() => {
+    setCompletedBonuses(getCompletedBonuses());
+  }, []);
+
   // Filter modules
   const filteredModules = modules.filter((module) => {
-    // Search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       const matchesSearch =
@@ -52,21 +68,15 @@ export default function TrainingPage() {
         module.skills.some((skill) => skill.toLowerCase().includes(query));
       if (!matchesSearch) return false;
     }
-
-    // Difficulty filter
     if (difficultyFilter !== 'all' && module.difficulty !== difficultyFilter) {
       return false;
     }
-
-    // Status filter
     if (statusFilter !== 'all' && module.status !== statusFilter) {
       return false;
     }
-
     return true;
   });
 
-  // Group modules by status for better organization
   const availableModules = filteredModules.filter(
     (m) => m.status === 'available' || m.status === 'in-progress'
   );
@@ -83,6 +93,13 @@ export default function TrainingPage() {
     }
   };
 
+  const handleBonusClick = (bonus: BonusNode) => {
+    playSound('click');
+    toast.info(`🎯 Bonus Challenge: ${bonus.label} — launching ${bonus.description}`);
+    // Route to the linked module's training page with challenge flag
+    router.push(`/training/${bonus.linkedModuleId}?challenge=true`);
+  };
+
   const clearSearch = () => {
     setSearchQuery('');
     setDifficultyFilter('all');
@@ -90,7 +107,6 @@ export default function TrainingPage() {
     playSound('click');
   };
 
-  // When filters are active, force grid view since tree shows all modules
   let hasFilters = searchQuery || difficultyFilter !== 'all' || statusFilter !== 'all';
   let activeView = hasFilters ? 'grid' : viewMode;
 
@@ -165,7 +181,12 @@ export default function TrainingPage() {
           {/* Skill Tree View */}
           {activeView === 'tree' && !isLoading && (
             <div className="cyber-card p-6 md:p-8 mb-8">
-              <SkillTree modules={modules} onModuleClick={handleModuleClick} />
+              <SkillTree
+                modules={modules}
+                onModuleClick={handleModuleClick}
+                completedBonuses={completedBonuses}
+                onBonusClick={handleBonusClick}
+              />
             </div>
           )}
 
@@ -247,7 +268,6 @@ export default function TrainingPage() {
               {isLoading ? (
                 <ModuleGridSkeleton count={6} />
               ) : filteredModules.length === 0 ? (
-                /* Empty State */
                 <div className="cyber-card p-6">
                   <NoSearchResults 
                     query={searchQuery || undefined} 
@@ -255,9 +275,7 @@ export default function TrainingPage() {
                   />
                 </div>
               ) : (
-                /* Modules Grid */
                 <div className="space-y-8">
-                  {/* Available Modules */}
                   {availableModules.length > 0 && (
                     <section>
                       <h2 className="text-lg font-semibold text-cyber-200 mb-4 flex items-center space-x-2">
@@ -276,7 +294,6 @@ export default function TrainingPage() {
                     </section>
                   )}
 
-                  {/* Completed Modules */}
                   {completedModules.length > 0 && (
                     <section>
                       <h2 className="text-lg font-semibold text-cyber-200 mb-4 flex items-center space-x-2">
@@ -295,7 +312,6 @@ export default function TrainingPage() {
                     </section>
                   )}
 
-                  {/* Locked Modules */}
                   {lockedModules.length > 0 && (
                     <section>
                       <h2 className="text-lg font-semibold text-cyber-200 mb-4 flex items-center space-x-2">
