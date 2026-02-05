@@ -6,6 +6,7 @@ export { default as ChatInterface } from './ChatInterface';
 export { default as ScoreDisplay } from './ScoreDisplay';
 export { default as ProgressStats } from './ProgressStats';
 export { default as VulnerabilityRadar } from './VulnerabilityRadar';
+export { default as SkillTree } from './SkillTree';
 
 // UI Components
 export * from './ui';
