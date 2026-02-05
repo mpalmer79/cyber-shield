@@ -23,7 +23,10 @@ import {
   Zap,
 } from 'lucide-react';
 import { Header, ScoreDisplay } from '@/components';
+import CoachingChat from '@/components/CoachingChat';
 import { useModulesStore, useSessionStore, useProgressStore, useVulnerabilityStore } from '@/store';
+import { useDemoStore } from '@/store/demo-store';
+import { generateDemoResponse, resetDemoSession } from '@/lib/demo';
 import { cn } from '@/lib/utils';
 import { getAdaptiveScenarios, scenarioImages } from '@/lib/scenarios';
 import {
@@ -46,6 +49,7 @@ import type {
 } from '@/lib/scenarios/types';
 import type { SessionFeedback } from '@/types';
 import type { ScenarioResult } from '@/lib/adaptive';
+import type { CoachingScoreBreakdown } from '@/lib/coaching';
 
 type TrainingPhase = 'intro' | 'training' | 'results';
 
@@ -491,6 +495,7 @@ export default function TrainingModulePage() {
   let { startSession, endSession } = useSessionStore();
   let { updateModuleProgress, addXP, updateStreak } = useProgressStore();
   let { profile: vulnProfile, recordResult, finishSession: finishVulnSession, getRecentScenarioIds } = useVulnerabilityStore();
+  let { isDemoMode, incrementScenarios: incrementDemoScenarios } = useDemoStore();
 
   let module = getModule(moduleId);
 
@@ -502,9 +507,34 @@ export default function TrainingModulePage() {
   let [sessionFeedback, setSessionFeedback] = useState<SessionFeedback | null>(null);
   let [correctAnswers, setCorrectAnswers] = useState(0);
   let [answeredScenarios, setAnsweredScenarios] = useState<{ correct: boolean; scenario: TrainingScenario }[]>([]);
+  let [showCoachingChat, setShowCoachingChat] = useState(false);
 
   let totalScenarios = 5;
   let currentScenario = scenarios[scenarioIndex];
+
+  // === AI Call Function (demo-aware) ===
+  // In demo mode: uses local engine. In production: hits /api/coaching
+  let callAI = async (messages: Array<{ role: string; content: string }>): Promise<string> => {
+    if (isDemoMode) {
+      return generateDemoResponse(messages, currentScenario?.id || 'default');
+    }
+    // Production: call the real coaching API
+    let resp = await fetch('/api/coaching', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages }),
+    });
+    if (!resp.ok) throw new Error('Coaching API error');
+    let data = await resp.json();
+    return data.content || '';
+  };
+
+  // Open coaching chat automatically in demo mode when training starts
+  let handleCoachingComplete = (_score: CoachingScoreBreakdown, _session: any) => {
+    // Coaching session completed — score already tracked by CoachingChat
+    setShowCoachingChat(false);
+    if (isDemoMode) incrementDemoScenarios();
+  };
 
   // Build scenario set using adaptive engine
   let initializeScenarios = () => {
@@ -529,6 +559,10 @@ export default function TrainingModulePage() {
     setAnsweredScenarios([]);
     setSelectedAnswer(null);
     setShowResult(false);
+    // Auto-open coaching chat in demo mode for phishing/social-engineering modules
+    if (isDemoMode && (module?.type === 'phishing' || module?.type === 'social-engineering')) {
+      setShowCoachingChat(true);
+    }
   };
 
   // Process user answer - uses the pure checkAnswer function
@@ -565,6 +599,9 @@ export default function TrainingModulePage() {
       setScenarioIndex(prev => prev + 1);
       setSelectedAnswer(null);
       setShowResult(false);
+      // Reset coaching for new scenario
+      if (currentScenario) resetDemoSession(currentScenario.id);
+      if (isDemoMode) setShowCoachingChat(true);
     }
   };
 
@@ -747,8 +784,8 @@ export default function TrainingModulePage() {
     <div className="min-h-screen">
       <Header currentPage="training" />
 
-      <main className="py-8 px-4">
-        <div className="container mx-auto max-w-4xl">
+      <main className={`py-8 px-4 ${isDemoMode ? 'pt-16' : ''}`}>
+        <div className={`container mx-auto ${isDemoMode ? 'max-w-6xl' : 'max-w-4xl'}`}>
           {/* Back Navigation */}
           <Link
             href="/training"
@@ -816,14 +853,22 @@ export default function TrainingModulePage() {
 
                 {/* Start Button */}
                 <div className="text-center">
-                  <button
-                    onClick={handleStartTraining}
-                    className="cyber-button text-lg px-10 py-4 inline-flex items-center space-x-3"
-                  >
-                    <Shield className="h-6 w-6" />
-                    <span>Start Training</span>
-                    <ArrowRight className="h-5 w-5" />
-                  </button>
+                  {isDemoMode && (
+                    <div className="inline-flex items-center space-x-2 px-4 py-2 bg-amber-500/10 border border-amber-500/30 rounded-full mb-4">
+                      <span className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
+                      <span className="text-xs text-amber-300 font-medium">Demo Mode — AI Coach will guide you through each scenario</span>
+                    </div>
+                  )}
+                  <div>
+                    <button
+                      onClick={handleStartTraining}
+                      className="cyber-button text-lg px-10 py-4 inline-flex items-center space-x-3"
+                    >
+                      <Shield className="h-6 w-6" />
+                      <span>{isDemoMode ? 'Start Demo Training' : 'Start Training'}</span>
+                      <ArrowRight className="h-5 w-5" />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -831,50 +876,88 @@ export default function TrainingModulePage() {
 
           {/* Training Phase */}
           {phase === 'training' && (
-            <div>
-              {/* Progress Bar */}
-              <div className="cyber-card p-4 mb-6">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm text-white/60">
-                    Scenario {scenarioIndex + 1} of {totalScenarios}
-                  </span>
-                  <div className="flex items-center space-x-4">
-                    <span className="text-sm text-green-400">
-                      {correctAnswers} correct
+            <div className={`${isDemoMode ? 'lg:grid lg:grid-cols-[1fr_380px] lg:gap-6' : ''}`}>
+              <div>
+                {/* Progress Bar */}
+                <div className="cyber-card p-4 mb-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-sm text-white/60">
+                      Scenario {scenarioIndex + 1} of {totalScenarios}
                     </span>
-                    <span className="text-sm text-white/80 font-medium">
-                      {Math.round(((scenarioIndex + (showResult ? 1 : 0)) / totalScenarios) * 100)}% complete
-                    </span>
+                    <div className="flex items-center space-x-4">
+                      <span className="text-sm text-green-400">
+                        {correctAnswers} correct
+                      </span>
+                      {/* Coaching chat toggle button */}
+                      {!showCoachingChat && (
+                        <button
+                          onClick={() => setShowCoachingChat(true)}
+                          className="text-xs px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 transition-colors flex items-center space-x-1.5"
+                        >
+                          <Shield className="h-3 w-3" />
+                          <span>AI Coach</span>
+                        </button>
+                      )}
+                      <span className="text-sm text-white/80 font-medium">
+                        {Math.round(((scenarioIndex + (showResult ? 1 : 0)) / totalScenarios) * 100)}% complete
+                      </span>
+                    </div>
+                  </div>
+                  <div className="h-2 bg-cyber-800 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-cyber-500 to-cyan-500 transition-all duration-500"
+                      style={{ width: `${((scenarioIndex + (showResult ? 1 : 0)) / totalScenarios) * 100}%` }}
+                    />
+                  </div>
+                  {/* Progress Dots */}
+                  <div className="flex justify-between mt-3">
+                    {Array.from({ length: totalScenarios }).map((_, idx) => (
+                      <div
+                        key={idx}
+                        className={cn(
+                          "w-8 h-1 rounded-full transition-all",
+                          idx < scenarioIndex
+                            ? answeredScenarios[idx]?.correct
+                              ? "bg-green-500"
+                              : "bg-red-500"
+                            : idx === scenarioIndex
+                              ? "bg-cyber-500"
+                              : "bg-cyber-800"
+                        )}
+                      />
+                    ))}
                   </div>
                 </div>
-                <div className="h-2 bg-cyber-800 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-cyber-500 to-cyan-500 transition-all duration-500"
-                    style={{ width: `${((scenarioIndex + (showResult ? 1 : 0)) / totalScenarios) * 100}%` }}
-                  />
-                </div>
-                {/* Progress Dots */}
-                <div className="flex justify-between mt-3">
-                  {Array.from({ length: totalScenarios }).map((_, idx) => (
-                    <div
-                      key={idx}
-                      className={cn(
-                        "w-8 h-1 rounded-full transition-all",
-                        idx < scenarioIndex
-                          ? answeredScenarios[idx]?.correct
-                            ? "bg-green-500"
-                            : "bg-red-500"
-                          : idx === scenarioIndex
-                            ? "bg-cyber-500"
-                            : "bg-cyber-800"
-                      )}
-                    />
-                  ))}
-                </div>
+
+                {/* Scenario Content */}
+                {currentScenario && renderScenarioContent()}
               </div>
 
-              {/* Scenario Content */}
-              {currentScenario && renderScenarioContent()}
+              {/* Coaching Chat Sidebar (visible in demo mode or when toggled) */}
+              {showCoachingChat && currentScenario && (
+                <div className="hidden lg:block sticky top-24 self-start">
+                  <CoachingChat
+                    scenario={currentScenario}
+                    onComplete={handleCoachingComplete}
+                    onClose={() => setShowCoachingChat(false)}
+                    callAI={callAI}
+                    className="w-full"
+                  />
+                </div>
+              )}
+
+              {/* Mobile coaching chat — fixed bottom sheet */}
+              {showCoachingChat && currentScenario && (
+                <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 px-4 pb-4">
+                  <CoachingChat
+                    scenario={currentScenario}
+                    onComplete={handleCoachingComplete}
+                    onClose={() => setShowCoachingChat(false)}
+                    callAI={callAI}
+                    className="w-full shadow-2xl shadow-black/50"
+                  />
+                </div>
+              )}
             </div>
           )}
 
