@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   Flame,
   Shield,
@@ -58,6 +59,21 @@ import type {
   ConversationLine,
 } from '@/lib/scenarios/types';
 import type { ScenarioResult } from '@/lib/adaptive';
+
+// ============================================
+// Stock images for page sections
+// ============================================
+
+const dailyImages = {
+  // Hero: dark SOC / command center vibe
+  hero: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=1600&q=80',
+  // Accuracy: data visualization / analytics
+  accuracy: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&q=80',
+  // Badges: trophy / achievement aesthetic
+  badges: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800&q=80',
+  // Tips: keyboard / cyber workspace
+  tips: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&q=80',
+};
 
 // ============================================
 // Deterministic daily scenario picker
@@ -407,10 +423,53 @@ interface BadgeMilestone {
 }
 
 const BADGES: BadgeMilestone[] = [
-  { id: 'defender', label: 'Daily Defender', icon: <Shield className="h-6 w-6" />, requiredStreak: 3, color: 'text-cyan-400' },
+  { id: 'defender', label: 'Daily Defender', icon: <Shield className="h-6 w-6" />, requiredStreak: 3, color: 'text-blue-400' },
   { id: 'warrior', label: 'Week Warrior', icon: <Flame className="h-6 w-6" />, requiredStreak: 7, color: 'text-orange-400' },
-  { id: 'guardian', label: 'Month Guardian', icon: <Award className="h-6 w-6" />, requiredStreak: 30, color: 'text-yellow-400' },
+  { id: 'guardian', label: 'Month Guardian', icon: <Award className="h-6 w-6" />, requiredStreak: 30, color: 'text-amber-400' },
 ];
+
+// ============================================
+// Watermark Card Wrapper — stock image bg + dark overlay
+// ============================================
+
+function WatermarkCard({
+  imageUrl,
+  overlayFrom,
+  overlayTo,
+  children,
+  className = '',
+}: {
+  imageUrl: string;
+  overlayFrom: string;
+  overlayTo: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={cn("relative rounded-xl overflow-hidden border border-white/[0.06]", className)}>
+      {/* Stock image watermark */}
+      <div className="absolute inset-0">
+        <Image
+          src={imageUrl}
+          alt=""
+          fill
+          className="object-cover opacity-[0.07]"
+          sizes="400px"
+        />
+      </div>
+      {/* Gradient overlay for readability */}
+      <div className={cn(
+        "absolute inset-0 bg-gradient-to-br",
+        overlayFrom,
+        overlayTo
+      )} />
+      {/* Content */}
+      <div className="relative z-10">
+        {children}
+      </div>
+    </div>
+  );
+}
 
 // ============================================
 // Main Daily Challenge Page
@@ -537,89 +596,102 @@ export default function DailyChallengePage() {
     <div className="min-h-screen">
       <Header currentPage="daily" />
 
-      {/* Hero Banner */}
-      <section className="relative py-12 px-4 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 via-transparent to-cyan-500/5" />
-        <div className="absolute top-0 right-1/4 w-64 h-64 bg-orange-500/5 rounded-full blur-3xl" />
+      {/* ============================================ */}
+      {/* HERO BANNER — Full-width image card          */}
+      {/* ============================================ */}
+      <section className="px-4 pt-6 pb-2">
+        <div className="container mx-auto">
+          <div className="relative rounded-2xl overflow-hidden border border-white/[0.06]" style={{ minHeight: '260px' }}>
+            {/* Background stock image */}
+            <Image
+              src={dailyImages.hero}
+              alt="Cybersecurity operations center"
+              fill
+              className="object-cover"
+              priority
+              sizes="(max-width: 768px) 100vw, 1200px"
+            />
+            {/* Dark gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0a0f1c]/95 via-[#0a0f1c]/80 to-[#0a0f1c]/50" />
+            {/* Accent line at top */}
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-orange-500 via-amber-500 to-transparent" />
 
-        <div className="container mx-auto relative z-10">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-            {/* Left: Title + Date */}
-            <div>
-              <div className="flex items-center space-x-3 mb-3">
-                <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500/20 to-red-500/20 border border-orange-500/30">
-                  <Flame className="h-6 w-6 text-orange-400" />
-                </div>
-                <div>
-                  <h1 className="text-3xl md:text-4xl font-bold text-white">Daily Challenge</h1>
-                  <p className="text-cyber-400 text-sm">
+            {/* Content */}
+            <div className="relative z-10 px-6 md:px-10 py-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+              {/* Left: Title + date + description */}
+              <div className="max-w-xl">
+                <div className="flex items-center space-x-2 mb-2">
+                  <span className="text-xs font-semibold uppercase tracking-widest text-orange-400/80">
                     {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
-                  </p>
+                  </span>
                 </div>
-              </div>
-              <p className="text-cyber-300 max-w-lg">
-                One scenario per day. Stay sharp, build your streak, earn badges. Takes under 60 seconds.
-              </p>
-            </div>
+                <h1 className="text-3xl md:text-4xl font-bold text-white mb-3 tracking-tight">
+                  Daily Challenge
+                </h1>
+                <p className="text-gray-400 text-sm leading-relaxed max-w-md">
+                  One scenario per day. Stay sharp, build your streak, earn badges. Takes under 60 seconds.
+                </p>
 
-            {/* Right: Streak Counter */}
-            <div className="flex items-center space-x-6">
-              <div className="text-center">
-                <div className="flex items-center justify-center space-x-2">
-                  <Flame className={cn(
-                    "h-8 w-8 transition-colors",
-                    currentStreak >= 3 ? "text-orange-400" : currentStreak >= 1 ? "text-orange-300" : "text-cyber-600"
-                  )} />
-                  <span className="text-5xl font-bold text-white">{currentStreak}</span>
+                {/* Streak pills */}
+                <div className="flex items-center space-x-3 mt-5">
+                  <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20">
+                    <Flame className={cn(
+                      "h-4 w-4",
+                      currentStreak >= 3 ? "text-orange-400" : currentStreak >= 1 ? "text-orange-300" : "text-gray-600"
+                    )} />
+                    <span className="text-sm font-bold text-white">{currentStreak}</span>
+                    <span className="text-xs text-gray-500">streak</span>
+                  </div>
+                  <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
+                    <Trophy className="h-4 w-4 text-amber-400" />
+                    <span className="text-sm font-bold text-white">{longestStreak}</span>
+                    <span className="text-xs text-gray-500">best</span>
+                  </div>
+                  <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
+                    <Target className="h-4 w-4 text-blue-400" />
+                    <span className="text-sm font-bold text-white">{totalChallengesCompleted}</span>
+                    <span className="text-xs text-gray-500">total</span>
+                  </div>
                 </div>
-                <span className="text-sm text-cyber-400 mt-1 block">Day Streak</span>
               </div>
-              <div className="w-px h-16 bg-cyber-700/50" />
-              <div className="text-center">
-                <span className="text-3xl font-bold text-cyber-300">{longestStreak}</span>
-                <span className="text-sm text-cyber-500 mt-1 block">Best Streak</span>
-              </div>
-              <div className="w-px h-16 bg-cyber-700/50" />
-              <div className="text-center">
-                <span className="text-3xl font-bold text-cyber-300">{totalChallengesCompleted}</span>
-                <span className="text-sm text-cyber-500 mt-1 block">Completed</span>
+
+              {/* Right: Week calendar */}
+              <div className="flex items-center space-x-1.5 md:space-x-2.5">
+                {weekDays.map((day) => (
+                  <div key={day.key} className="flex flex-col items-center space-y-1.5">
+                    <span className={cn(
+                      "text-[10px] font-medium uppercase tracking-wider",
+                      day.isToday ? "text-orange-400" : day.completed ? "text-white/60" : "text-white/25"
+                    )}>
+                      {day.label}
+                    </span>
+                    <div className={cn(
+                      "w-9 h-9 rounded-full flex items-center justify-center border-2 transition-all",
+                      day.completed
+                        ? "bg-orange-500/20 border-orange-400 text-orange-400"
+                        : day.isToday
+                          ? "border-white/30 text-white/50 border-dashed"
+                          : "border-white/[0.06] text-white/15"
+                    )}>
+                      {day.completed ? (
+                        <CheckCircle className="h-4 w-4" />
+                      ) : day.isToday ? (
+                        <Flame className="h-3.5 w-3.5" />
+                      ) : (
+                        <span className="w-1.5 h-1.5 rounded-full bg-current" />
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-          </div>
-
-          {/* Week Calendar */}
-          <div className="mt-8 flex items-center justify-center space-x-2">
-            {weekDays.map((day) => (
-              <div key={day.key} className="flex flex-col items-center space-y-2">
-                <span className={cn(
-                  "text-xs font-medium",
-                  day.isToday ? "text-orange-400" : "text-cyber-500"
-                )}>
-                  {day.label}
-                </span>
-                <div className={cn(
-                  "w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all",
-                  day.completed
-                    ? "bg-orange-500/20 border-orange-400 text-orange-400"
-                    : day.isToday
-                      ? "border-cyber-500 text-cyber-400 border-dashed"
-                      : "border-cyber-700/50 text-cyber-700"
-                )}>
-                  {day.completed ? (
-                    <CheckCircle className="h-5 w-5" />
-                  ) : day.isToday ? (
-                    <Flame className="h-4 w-4" />
-                  ) : (
-                    <span className="w-2 h-2 rounded-full bg-current" />
-                  )}
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </section>
 
-      {/* Main Content */}
+      {/* ============================================ */}
+      {/* MAIN CONTENT                                 */}
+      {/* ============================================ */}
       <section className="py-8 px-4">
         <div className="container mx-auto">
           <div className="grid lg:grid-cols-3 gap-8">
@@ -627,23 +699,23 @@ export default function DailyChallengePage() {
             <div className="lg:col-span-2">
               {/* Scenario Header */}
               <div className="flex items-center space-x-3 mb-6">
-                <div className="flex items-center space-x-2 px-3 py-1.5 bg-cyber-800/50 rounded-full border border-cyber-700/50">
+                <div className="flex items-center space-x-2 px-3 py-1.5 bg-white/5 rounded-full border border-white/10">
                   {moduleIcons[scenario.moduleType] || <Globe className="h-5 w-5" />}
-                  <span className="text-sm text-cyber-300">{moduleLabels[scenario.moduleType] || scenario.moduleType}</span>
+                  <span className="text-sm text-gray-300">{moduleLabels[scenario.moduleType] || scenario.moduleType}</span>
                 </div>
                 <div className={cn(
                   "px-3 py-1.5 rounded-full text-xs font-medium",
-                  scenario.difficulty === 'beginner' ? "bg-green-500/20 text-green-400" :
-                  scenario.difficulty === 'intermediate' ? "bg-yellow-500/20 text-yellow-400" :
-                  scenario.difficulty === 'advanced' ? "bg-orange-500/20 text-orange-400" :
-                  "bg-red-500/20 text-red-400"
+                  scenario.difficulty === 'beginner' ? "bg-blue-500/15 text-blue-400 border border-blue-500/20" :
+                  scenario.difficulty === 'intermediate' ? "bg-amber-500/15 text-amber-400 border border-amber-500/20" :
+                  scenario.difficulty === 'advanced' ? "bg-orange-500/15 text-orange-400 border border-orange-500/20" :
+                  "bg-red-500/15 text-red-400 border border-red-500/20"
                 )}>
                   {scenario.difficulty}
                 </div>
                 {todayCompleted && (
                   <div className={cn(
                     "px-3 py-1.5 rounded-full text-xs font-semibold",
-                    todayResult ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"
+                    todayResult ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20" : "bg-red-500/15 text-red-400 border border-red-500/20"
                   )}>
                     {todayResult ? 'Correct' : 'Incorrect'}
                   </div>
@@ -698,41 +770,36 @@ export default function DailyChallengePage() {
 
               {/* Result Panel */}
               {showResult && (
-                <div className={cn(
-                  "mt-6 rounded-xl border-2 p-6",
-                  todayResult
-                    ? "bg-green-500/5 border-green-500/30"
-                    : "bg-red-500/5 border-red-500/30"
-                )}>
+                <div className="mt-6 cyber-card p-6">
                   <div className="flex items-start space-x-4">
                     {todayResult ? (
-                      <div className="flex-shrink-0 w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
-                        <CheckCircle className="h-7 w-7 text-green-400" />
+                      <div className="flex-shrink-0 w-12 h-12 rounded-full bg-emerald-500/15 flex items-center justify-center">
+                        <CheckCircle className="h-7 w-7 text-emerald-400" />
                       </div>
                     ) : (
-                      <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center">
+                      <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-500/15 flex items-center justify-center">
                         <XCircle className="h-7 w-7 text-red-400" />
                       </div>
                     )}
                     <div className="flex-1">
                       <h3 className={cn(
                         "text-xl font-bold mb-2",
-                        todayResult ? "text-green-400" : "text-red-400"
+                        todayResult ? "text-emerald-400" : "text-red-400"
                       )}>
                         {todayResult ? 'Correct!' : 'Not Quite'}
                       </h3>
-                      <p className="text-cyber-300 mb-4">{scenario.explanation}</p>
+                      <p className="text-gray-300 mb-4">{scenario.explanation}</p>
 
                       {/* Red Flags */}
                       {scenario.redFlags.length > 0 && (
                         <div className="mb-4">
-                          <h4 className="text-sm font-semibold text-cyber-300 mb-2 flex items-center space-x-2">
-                            <AlertTriangle className="h-4 w-4 text-yellow-400" />
+                          <h4 className="text-sm font-semibold text-gray-300 mb-2 flex items-center space-x-2">
+                            <AlertTriangle className="h-4 w-4 text-amber-400" />
                             <span>Red Flags to Watch For</span>
                           </h4>
                           <div className="flex flex-wrap gap-2">
                             {scenario.redFlags.map((flag, i) => (
-                              <span key={i} className="px-3 py-1 bg-yellow-500/10 border border-yellow-500/20 rounded-full text-xs text-yellow-400">
+                              <span key={i} className="px-3 py-1 bg-amber-500/10 border border-amber-500/20 rounded-full text-xs text-amber-300">
                                 {flag}
                               </span>
                             ))}
@@ -743,14 +810,14 @@ export default function DailyChallengePage() {
                       {/* Learning Points */}
                       {scenario.learningPoints.length > 0 && (
                         <div className="mb-4">
-                          <h4 className="text-sm font-semibold text-cyber-300 mb-2 flex items-center space-x-2">
-                            <Lightbulb className="h-4 w-4 text-cyan-400" />
+                          <h4 className="text-sm font-semibold text-gray-300 mb-2 flex items-center space-x-2">
+                            <Lightbulb className="h-4 w-4 text-blue-400" />
                             <span>Key Takeaways</span>
                           </h4>
                           <ul className="space-y-1">
                             {scenario.learningPoints.map((pt, i) => (
-                              <li key={i} className="text-sm text-cyber-400 flex items-start space-x-2">
-                                <ChevronRight className="h-4 w-4 text-cyber-600 flex-shrink-0 mt-0.5" />
+                              <li key={i} className="text-sm text-gray-400 flex items-start space-x-2">
+                                <ChevronRight className="h-4 w-4 text-gray-600 flex-shrink-0 mt-0.5" />
                                 <span>{pt}</span>
                               </li>
                             ))}
@@ -759,10 +826,10 @@ export default function DailyChallengePage() {
                       )}
 
                       {/* XP Awarded */}
-                      <div className="flex items-center space-x-4 pt-4 border-t border-cyber-700/30">
-                        <div className="flex items-center space-x-2 px-4 py-2 bg-cyber-500/10 rounded-lg border border-cyber-500/20">
-                          <Zap className="h-5 w-5 text-yellow-400" />
-                          <span className="text-lg font-bold text-yellow-400">+{xpAwarded} XP</span>
+                      <div className="flex items-center space-x-4 pt-4 border-t border-white/[0.06]">
+                        <div className="flex items-center space-x-2 px-4 py-2 bg-amber-500/10 rounded-lg border border-amber-500/20">
+                          <Zap className="h-5 w-5 text-amber-400" />
+                          <span className="text-lg font-bold text-amber-400">+{xpAwarded} XP</span>
                         </div>
                         {currentStreak > 1 && (
                           <div className="flex items-center space-x-2 text-sm text-orange-400">
@@ -775,17 +842,17 @@ export default function DailyChallengePage() {
                   </div>
 
                   {/* CTAs */}
-                  <div className="flex flex-col sm:flex-row gap-3 mt-6 pt-4 border-t border-cyber-700/30">
+                  <div className="flex flex-col sm:flex-row gap-3 mt-6 pt-4 border-t border-white/[0.06]">
                     <Link
                       href="/training"
-                      className="flex items-center justify-center space-x-2 px-6 py-3 bg-cyber-500 hover:bg-cyber-400 text-white font-medium rounded-xl transition-colors"
+                      className="flex items-center justify-center space-x-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl transition-colors"
                     >
                       <span>Continue Training</span>
                       <ArrowRight className="h-4 w-4" />
                     </Link>
                     <Link
                       href="/progress"
-                      className="flex items-center justify-center space-x-2 px-6 py-3 bg-white/5 hover:bg-white/10 text-cyber-300 font-medium rounded-xl transition-colors border border-cyber-700/50"
+                      className="flex items-center justify-center space-x-2 px-6 py-3 bg-white/5 hover:bg-white/10 text-gray-300 font-medium rounded-xl transition-colors border border-white/10"
                     >
                       <TrendingUp className="h-4 w-4" />
                       <span>View Progress</span>
@@ -795,108 +862,129 @@ export default function DailyChallengePage() {
               )}
             </div>
 
-            {/* Right Sidebar */}
+            {/* ============================================ */}
+            {/* RIGHT SIDEBAR — Watermarked image cards      */}
+            {/* ============================================ */}
             <div className="space-y-6">
+
               {/* 30-Day Accuracy */}
-              <div className="cyber-card p-6">
-                <h3 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
-                  <Target className="h-5 w-5 text-cyber-400" />
-                  <span>30-Day Accuracy</span>
-                </h3>
-                <div className="flex items-center justify-center mb-4">
-                  <div className="relative w-32 h-32">
-                    <svg className="w-full h-full -rotate-90" viewBox="0 0 128 128">
-                      <circle cx="64" cy="64" r="56" stroke="currentColor" strokeWidth="8" fill="none" className="text-cyber-800" />
-                      <circle
-                        cx="64" cy="64" r="56"
-                        stroke="currentColor" strokeWidth="8" fill="none"
-                        className={cn(
-                          accuracy >= 80 ? "text-green-400" :
-                          accuracy >= 60 ? "text-yellow-400" :
-                          accuracy >= 40 ? "text-orange-400" :
-                          "text-red-400"
-                        )}
-                        strokeDasharray={`${(accuracy / 100) * 352} 352`}
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-3xl font-bold text-white">{accuracy}%</span>
-                      <span className="text-xs text-cyber-500">{recentCorrect}/{recentTotal}</span>
+              <WatermarkCard
+                imageUrl={dailyImages.accuracy}
+                overlayFrom="from-[#0c1222]/95"
+                overlayTo="to-[#111827]/90"
+              >
+                <div className="p-6">
+                  <h3 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
+                    <Target className="h-5 w-5 text-blue-400" />
+                    <span>30-Day Accuracy</span>
+                  </h3>
+                  <div className="flex items-center justify-center mb-4">
+                    <div className="relative w-32 h-32">
+                      <svg className="w-full h-full -rotate-90" viewBox="0 0 128 128">
+                        <circle cx="64" cy="64" r="56" stroke="currentColor" strokeWidth="8" fill="none" className="text-white/[0.06]" />
+                        <circle
+                          cx="64" cy="64" r="56"
+                          stroke="currentColor" strokeWidth="8" fill="none"
+                          className={cn(
+                            accuracy >= 80 ? "text-emerald-400" :
+                            accuracy >= 60 ? "text-amber-400" :
+                            accuracy >= 40 ? "text-orange-400" :
+                            "text-red-400"
+                          )}
+                          strokeDasharray={`${(accuracy / 100) * 352} 352`}
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <span className="text-3xl font-bold text-white">{accuracy}%</span>
+                        <span className="text-xs text-gray-500">{recentCorrect}/{recentTotal}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              </WatermarkCard>
 
               {/* Streak Badges */}
-              <div className="cyber-card p-6">
-                <h3 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
-                  <Award className="h-5 w-5 text-yellow-400" />
-                  <span>Streak Badges</span>
-                </h3>
-                <div className="space-y-4">
-                  {badgeStatus.map((badge) => (
-                    <div
-                      key={badge.id}
-                      className={cn(
-                        "flex items-center space-x-4 p-3 rounded-lg border transition-all",
-                        badge.earned
-                          ? "bg-cyber-800/50 border-cyber-600/50"
-                          : "bg-cyber-900/30 border-cyber-800/30 opacity-50"
-                      )}
-                    >
-                      <div className={cn(
-                        "flex items-center justify-center w-10 h-10 rounded-full",
-                        badge.earned
-                          ? `bg-cyber-800/50 ${badge.color}`
-                          : "bg-cyber-900/50 text-cyber-700"
-                      )}>
-                        {badge.icon}
-                      </div>
-                      <div className="flex-1">
-                        <span className={cn(
-                          "font-medium block",
-                          badge.earned ? "text-cyber-200" : "text-cyber-600"
+              <WatermarkCard
+                imageUrl={dailyImages.badges}
+                overlayFrom="from-[#120c1c]/95"
+                overlayTo="to-[#1a1025]/90"
+              >
+                <div className="p-6">
+                  <h3 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
+                    <Award className="h-5 w-5 text-amber-400" />
+                    <span>Streak Badges</span>
+                  </h3>
+                  <div className="space-y-3">
+                    {badgeStatus.map((badge) => (
+                      <div
+                        key={badge.id}
+                        className={cn(
+                          "flex items-center space-x-4 p-3 rounded-lg border transition-all",
+                          badge.earned
+                            ? "bg-white/[0.04] border-white/10"
+                            : "bg-white/[0.02] border-white/[0.04] opacity-50"
+                        )}
+                      >
+                        <div className={cn(
+                          "flex items-center justify-center w-10 h-10 rounded-full",
+                          badge.earned
+                            ? `bg-white/[0.06] ${badge.color}`
+                            : "bg-white/[0.03] text-gray-700"
                         )}>
-                          {badge.label}
-                        </span>
-                        <span className="text-xs text-cyber-500">
-                          {badge.requiredStreak}-day streak
-                        </span>
+                          {badge.icon}
+                        </div>
+                        <div className="flex-1">
+                          <span className={cn(
+                            "font-medium block",
+                            badge.earned ? "text-white" : "text-gray-600"
+                          )}>
+                            {badge.label}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            {badge.requiredStreak}-day streak
+                          </span>
+                        </div>
+                        {badge.earned && (
+                          <CheckCircle className="h-5 w-5 text-emerald-400 flex-shrink-0" />
+                        )}
                       </div>
-                      {badge.earned && (
-                        <CheckCircle className="h-5 w-5 text-green-400 flex-shrink-0" />
-                      )}
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
+              </WatermarkCard>
 
               {/* Tips */}
-              <div className="cyber-card p-6">
-                <h3 className="text-lg font-semibold text-white mb-3 flex items-center space-x-2">
-                  <Lightbulb className="h-5 w-5 text-cyan-400" />
-                  <span>Streak Tips</span>
-                </h3>
-                <ul className="space-y-2 text-sm text-cyber-400">
-                  <li className="flex items-start space-x-2">
-                    <Flame className="h-4 w-4 text-orange-400 flex-shrink-0 mt-0.5" />
-                    <span>Complete one challenge daily to keep your streak alive</span>
-                  </li>
-                  <li className="flex items-start space-x-2">
-                    <Zap className="h-4 w-4 text-yellow-400 flex-shrink-0 mt-0.5" />
-                    <span>Longer streaks earn bonus XP per challenge</span>
-                  </li>
-                  <li className="flex items-start space-x-2">
-                    <Star className="h-4 w-4 text-cyan-400 flex-shrink-0 mt-0.5" />
-                    <span>Unlock badges at 3, 7, and 30 day milestones</span>
-                  </li>
-                  <li className="flex items-start space-x-2">
-                    <Calendar className="h-4 w-4 text-purple-400 flex-shrink-0 mt-0.5" />
-                    <span>New scenario every day from all 8 training modules</span>
-                  </li>
-                </ul>
-              </div>
+              <WatermarkCard
+                imageUrl={dailyImages.tips}
+                overlayFrom="from-[#0c1a1c]/95"
+                overlayTo="to-[#0f1720]/90"
+              >
+                <div className="p-6">
+                  <h3 className="text-lg font-semibold text-white mb-3 flex items-center space-x-2">
+                    <Lightbulb className="h-5 w-5 text-amber-400" />
+                    <span>Streak Tips</span>
+                  </h3>
+                  <ul className="space-y-2.5 text-sm text-gray-400">
+                    <li className="flex items-start space-x-2.5">
+                      <Flame className="h-4 w-4 text-orange-400 flex-shrink-0 mt-0.5" />
+                      <span>Complete one challenge daily to keep your streak alive</span>
+                    </li>
+                    <li className="flex items-start space-x-2.5">
+                      <Zap className="h-4 w-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                      <span>Longer streaks earn bonus XP per challenge</span>
+                    </li>
+                    <li className="flex items-start space-x-2.5">
+                      <Star className="h-4 w-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                      <span>Unlock badges at 3, 7, and 30 day milestones</span>
+                    </li>
+                    <li className="flex items-start space-x-2.5">
+                      <Calendar className="h-4 w-4 text-purple-400 flex-shrink-0 mt-0.5" />
+                      <span>New scenario every day from all 8 training modules</span>
+                    </li>
+                  </ul>
+                </div>
+              </WatermarkCard>
             </div>
           </div>
         </div>
