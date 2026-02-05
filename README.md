@@ -7,7 +7,7 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![Version](https://img.shields.io/badge/Version-2.2.0-00d4ff?style=for-the-badge)](https://github.com/mpalmer79/cyber-shield)
 
-Enterprise-grade cybersecurity training platform powered by Claude AI. CyberShield combines an **Adaptive Difficulty Engine**, **real-time AI Coaching Chat**, and **vulnerability profiling** to deliver personalized security awareness training that evolves with each user. Built as a production-ready SaaS application with 14,800+ lines of TypeScript across 8 training modules and 60+ scenarios.
+Enterprise-grade cybersecurity training platform powered by Claude AI. CyberShield combines an **Adaptive Difficulty Engine**, **real-time AI Coaching Chat**, and **vulnerability profiling** to deliver personalized security awareness training that evolves with each user. Built as a production-ready SaaS application with 14,800+ lines of TypeScript across 8 training modules and 60+ scenarios. 
 
 ![CyberShield Hero](https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=1200&q=80)
 
