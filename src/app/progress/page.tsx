@@ -85,8 +85,8 @@ export default function ProgressPage() {
         <div className="container mx-auto">
           {/* Page Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-cyber-100 mb-2">Your Progress</h1>
-            <p className="text-cyber-400">
+            <h1 className="text-3xl font-bold text-white mb-2">Your Progress</h1>
+            <p className="text-slate-300">
               Track your cybersecurity training journey and adaptive threat analysis.
             </p>
           </div>
@@ -106,20 +106,20 @@ export default function ProgressPage() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="cyber-card p-4 text-center">
                   <Trophy className="h-6 w-6 text-yellow-400 mx-auto mb-2" />
-                  <div className="text-2xl font-bold text-cyber-200">
+                  <div className="text-2xl font-bold text-white">
                     <AnimatedCounter value={progress.totalScore} />
                   </div>
-                  <div className="text-xs text-cyber-500">Total Points</div>
+                  <div className="text-xs text-slate-400">Total Points</div>
                 </div>
                 <div className="cyber-card p-4 text-center">
                   <Target className="h-6 w-6 text-green-400 mx-auto mb-2" />
-                  <div className="text-2xl font-bold text-cyber-200">
+                  <div className="text-2xl font-bold text-white">
                     <AnimatedCounter value={completedModules.length} />
                   </div>
-                  <div className="text-xs text-cyber-500">Modules Done</div>
+                  <div className="text-xs text-slate-400">Modules Done</div>
                 </div>
                 <div className="cyber-card p-4 text-center">
-                  <Brain className="h-6 w-6 text-cyber-400 mx-auto mb-2" />
+                  <Brain className="h-6 w-6 text-slate-300 mx-auto mb-2" />
                   <div className={cn(
                     'text-2xl font-bold font-mono',
                     securityIQ >= 80 ? 'text-green-400' :
@@ -128,14 +128,14 @@ export default function ProgressPage() {
                   )}>
                     <AnimatedCounter value={securityIQ} />
                   </div>
-                  <div className="text-xs text-cyber-500">Security IQ</div>
+                  <div className="text-xs text-slate-400">Security IQ</div>
                 </div>
                 <div className="cyber-card p-4 text-center">
                   <Zap className="h-6 w-6 text-purple-400 mx-auto mb-2" />
-                  <div className="text-2xl font-bold text-cyber-200">
+                  <div className="text-2xl font-bold text-white">
                     <AnimatedCounter value={vulnProfile.totalScenarios} />
                   </div>
-                  <div className="text-xs text-cyber-500">Scenarios Analyzed</div>
+                  <div className="text-xs text-slate-400">Scenarios Analyzed</div>
                 </div>
               </div>
 
@@ -160,7 +160,7 @@ export default function ProgressPage() {
                           : `Adaptive Engine Calibrating (${vulnProfile.totalSessions}/3 sessions)`
                         }
                       </h3>
-                      <p className="text-xs text-cyber-400 mt-1">
+                      <p className="text-xs text-slate-300 mt-1">
                         {vulnProfile.isCalibrated
                           ? weakSpots.length > 0
                             ? `Training scenarios are weighted toward your weak spots. Current focus: ${
@@ -180,8 +180,8 @@ export default function ProgressPage() {
 
               {/* Module Progress List */}
               <div className="cyber-card p-6">
-                <h2 className="text-lg font-semibold text-cyber-200 mb-4 flex items-center space-x-2">
-                  <TrendingUp className="h-5 w-5 text-cyber-400" />
+                <h2 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
+                  <TrendingUp className="h-5 w-5 text-slate-300" />
                   <span>Module Progress</span>
                 </h2>
 
@@ -202,7 +202,7 @@ export default function ProgressPage() {
                             <div className="flex items-center space-x-3">
                               <span className="text-2xl">{moduleDetails.icon}</span>
                               <div>
-                                <h3 className="font-medium text-cyber-200">
+                                <h3 className="font-medium text-white">
                                   {moduleDetails.title}
                                 </h3>
                                 <span className={cn(
@@ -225,20 +225,20 @@ export default function ProgressPage() {
 
                           <div className="grid grid-cols-3 gap-4 text-sm">
                             <div>
-                              <span className="text-cyber-500">Best Score</span>
-                              <div className="font-semibold text-cyber-200">
+                              <span className="text-slate-400">Best Score</span>
+                              <div className="font-semibold text-white">
                                 {moduleProgress.bestScore}%
                               </div>
                             </div>
                             <div>
-                              <span className="text-cyber-500">Attempts</span>
-                              <div className="font-semibold text-cyber-200">
+                              <span className="text-slate-400">Attempts</span>
+                              <div className="font-semibold text-white">
                                 {moduleProgress.attempts}
                               </div>
                             </div>
                             <div>
-                              <span className="text-cyber-500">Last Attempt</span>
-                              <div className="font-semibold text-cyber-200">
+                              <span className="text-slate-400">Last Attempt</span>
+                              <div className="font-semibold text-white">
                                 {moduleProgress.lastAttemptDate
                                   ? formatDate(moduleProgress.lastAttemptDate)
                                   : 'N/A'}
@@ -253,7 +253,7 @@ export default function ProgressPage() {
                               max={100}
                               color={moduleProgress.bestScore >= moduleDetails.requiredScore ? 'green' : 'cyber'}
                             />
-                            <div className="flex justify-between text-xs text-cyber-500 mt-1">
+                            <div className="flex justify-between text-xs text-slate-400 mt-1">
                               <span>0%</span>
                               <span>Required: {moduleDetails.requiredScore}%</span>
                               <span>100%</span>
@@ -268,8 +268,8 @@ export default function ProgressPage() {
 
               {/* Badges */}
               <div className="cyber-card p-6">
-                <h2 className="text-lg font-semibold text-cyber-200 mb-4 flex items-center space-x-2">
-                  <Award className="h-5 w-5 text-cyber-400" />
+                <h2 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
+                  <Award className="h-5 w-5 text-slate-300" />
                   <span>Badges & Achievements</span>
                 </h2>
 
@@ -289,10 +289,10 @@ export default function ProgressPage() {
                         )}
                       >
                         <span className="text-3xl block mb-2">{badge.icon}</span>
-                        <h3 className="font-medium text-cyber-200 text-sm">{badge.name}</h3>
-                        <p className="text-xs text-cyber-500 mt-1">{badge.description}</p>
+                        <h3 className="font-medium text-white text-sm">{badge.name}</h3>
+                        <p className="text-xs text-slate-400 mt-1">{badge.description}</p>
                         {badge.earnedAt && (
-                          <p className="text-xs text-cyber-600 mt-2">
+                          <p className="text-xs text-slate-500 mt-2">
                             {formatDate(badge.earnedAt)}
                           </p>
                         )}
