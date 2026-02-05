@@ -491,3 +491,154 @@ export const useVulnerabilityStore = create<VulnerabilityState>()(
     }
   )
 );
+
+// ============================================
+// Daily Challenge Store (Persisted)
+// Duolingo-style daily scenario with streaks
+// ============================================
+
+interface DailyChallengeHistory {
+  date: string;
+  scenarioId: string;
+  wasCorrect: boolean;
+  xpEarned: number;
+}
+
+interface DailyChallengeState {
+  // streak tracking
+  currentStreak: number;
+  longestStreak: number;
+  lastCompletedDate: string | null;
+
+  // today's challenge state
+  todayScenarioSeed: string | null;
+  todayCompleted: boolean;
+  todayResult: boolean | null;
+
+  // history
+  history: DailyChallengeHistory[];
+  totalChallengesCompleted: number;
+
+  // badge tracking
+  dailyDefenderEarned: boolean;
+  weekWarriorEarned: boolean;
+  monthGuardianEarned: boolean;
+
+  // actions
+  completeDaily: (scenarioId: string, wasCorrect: boolean) => void;
+  getTodaysSeed: () => string;
+  checkAndResetIfNewDay: () => void;
+}
+
+function getDateKey(): string {
+  return new Date().toISOString().split('T')[0];
+}
+
+function getYesterday(): string {
+  let d = new Date(Date.now() - 86400000);
+  return d.toISOString().split('T')[0];
+}
+
+export const useDailyChallengeStore = create<DailyChallengeState>()(
+  persist(
+    (set, get) => ({
+      currentStreak: 0,
+      longestStreak: 0,
+      lastCompletedDate: null,
+      todayScenarioSeed: null,
+      todayCompleted: false,
+      todayResult: null,
+      history: [],
+      totalChallengesCompleted: 0,
+      dailyDefenderEarned: false,
+      weekWarriorEarned: false,
+      monthGuardianEarned: false,
+
+      getTodaysSeed: () => {
+        return getDateKey();
+      },
+
+      checkAndResetIfNewDay: () => {
+        let today = getDateKey();
+        let state = get();
+
+        // if seed matches today, nothing to do
+        if (state.todayScenarioSeed === today) return;
+
+        // new day detected - reset today's challenge
+        let yesterday = getYesterday();
+        let streakBroken = state.lastCompletedDate !== null
+          && state.lastCompletedDate !== yesterday
+          && state.lastCompletedDate !== today;
+
+        set({
+          todayScenarioSeed: today,
+          todayCompleted: false,
+          todayResult: null,
+          // reset streak if they missed yesterday
+          currentStreak: streakBroken ? 0 : state.currentStreak,
+        });
+      },
+
+      completeDaily: (scenarioId, wasCorrect) => {
+        let state = get();
+        let today = getDateKey();
+
+        // prevent double completion
+        if (state.todayCompleted) return;
+
+        let yesterday = getYesterday();
+        let prevStreak = state.currentStreak;
+
+        // calculate new streak
+        let newStreak = 1;
+        if (state.lastCompletedDate === yesterday) {
+          newStreak = prevStreak + 1;
+        } else if (state.lastCompletedDate === today) {
+          newStreak = prevStreak; // already counted today
+        }
+
+        let newLongest = Math.max(state.longestStreak, newStreak);
+
+        // xp: base 25 for completion, bonus 25 for correct, streak bonus
+        let xpEarned = 25;
+        if (wasCorrect) xpEarned = xpEarned + 25;
+        xpEarned = xpEarned + Math.min(newStreak * 5, 50); // cap streak bonus at 50
+
+        let entry: DailyChallengeHistory = {
+          date: today,
+          scenarioId,
+          wasCorrect,
+          xpEarned,
+        };
+
+        // keep last 90 days of history
+        let newHistory = [...state.history, entry];
+        if (newHistory.length > 90) {
+          newHistory = newHistory.slice(newHistory.length - 90);
+        }
+
+        // badge checks
+        let defender = state.dailyDefenderEarned || newStreak >= 3;
+        let warrior = state.weekWarriorEarned || newStreak >= 7;
+        let guardian = state.monthGuardianEarned || newStreak >= 30;
+
+        set({
+          todayCompleted: true,
+          todayResult: wasCorrect,
+          lastCompletedDate: today,
+          currentStreak: newStreak,
+          longestStreak: newLongest,
+          totalChallengesCompleted: state.totalChallengesCompleted + 1,
+          history: newHistory,
+          dailyDefenderEarned: defender,
+          weekWarriorEarned: warrior,
+          monthGuardianEarned: guardian,
+        });
+      },
+    }),
+    {
+      name: 'cybershield-daily-challenge',
+    }
+  )
+);
