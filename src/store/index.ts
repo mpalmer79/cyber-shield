@@ -528,6 +528,8 @@ interface DailyChallengeState {
   completeDaily: (scenarioId: string, wasCorrect: boolean) => void;
   getTodaysSeed: () => string;
   checkAndResetIfNewDay: () => void;
+  resetTodaysChallenge: () => void;
+  resetAllDailyProgress: () => void;
 }
 
 function getDateKey(): string {
@@ -634,6 +636,31 @@ export const useDailyChallengeStore = create<DailyChallengeState>()(
           dailyDefenderEarned: defender,
           weekWarriorEarned: warrior,
           monthGuardianEarned: guardian,
+        });
+      },
+
+      // Reset only today's challenge (keeps streaks and history)
+      resetTodaysChallenge: () => {
+        set({
+          todayCompleted: false,
+          todayResult: null,
+        });
+      },
+
+      // Reset all daily challenge data
+      resetAllDailyProgress: () => {
+        set({
+          currentStreak: 0,
+          longestStreak: 0,
+          lastCompletedDate: null,
+          todayScenarioSeed: null,
+          todayCompleted: false,
+          todayResult: null,
+          history: [],
+          totalChallengesCompleted: 0,
+          dailyDefenderEarned: false,
+          weekWarriorEarned: false,
+          monthGuardianEarned: false,
         });
       },
     }),
