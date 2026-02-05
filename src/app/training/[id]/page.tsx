@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -9,7 +9,6 @@ import {
   CheckCircle,
   XCircle,
   AlertTriangle,
-  ChevronRight,
   Shield,
   Mail,
   Phone,
@@ -19,7 +18,6 @@ import {
   Lightbulb,
   Award,
   Target,
-  RotateCcw,
   ArrowRight,
   Clock,
   Zap,
@@ -27,13 +25,31 @@ import {
 import { Header, ScoreDisplay } from '@/components';
 import { useModulesStore, useSessionStore, useProgressStore, useVulnerabilityStore } from '@/store';
 import { cn } from '@/lib/utils';
-import { getAdaptiveScenarios, TrainingScenario, scenarioImages } from '@/lib/scenarios';
+import { getAdaptiveScenarios, scenarioImages } from '@/lib/scenarios';
+import {
+  checkAnswer,
+  isPhishingJudgment,
+  asEmail,
+  asSMS,
+  asPhoneCall,
+  asInPerson,
+  asURLEvaluation,
+  asPasswordEvaluation,
+  asMultipleChoice,
+} from '@/lib/scenarios/types';
+import type {
+  TrainingScenario,
+  ScenarioOption,
+  URLOption,
+  PasswordOption,
+  ConversationLine,
+} from '@/lib/scenarios/types';
 import type { SessionFeedback } from '@/types';
 import type { ScenarioResult } from '@/lib/adaptive';
 
 type TrainingPhase = 'intro' | 'training' | 'results';
 
-// Stock images for module headers
+// Module header images keyed by module type
 const moduleHeaderImages: Record<string, string> = {
   'phishing': 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=1200&q=80',
   'social-engineering': 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=1200&q=80',
@@ -45,64 +61,465 @@ const moduleHeaderImages: Record<string, string> = {
   'threat-hunting': 'https://images.unsplash.com/photo-1551808525-51a94da548ce?w=1200&q=80',
 };
 
-// Get icon for scenario type
-const getScenarioIcon = (type: string) => {
-  switch (type) {
-    case 'email':
-      return <Mail className="h-6 w-6" />;
-    case 'sms':
-    case 'phone-call':
-      return <Phone className="h-6 w-6" />;
-    case 'url-evaluation':
-    case 'scenario':
-      return <Globe className="h-6 w-6" />;
-    case 'password-evaluation':
-      return <Lock className="h-6 w-6" />;
-    case 'in-person':
-      return <Users className="h-6 w-6" />;
-    default:
-      return <Shield className="h-6 w-6" />;
-  }
+const scenarioIconMap: Record<string, React.ReactNode> = {
+  'email': <Mail className="h-6 w-6" />,
+  'sms': <Phone className="h-6 w-6" />,
+  'phone-call': <Phone className="h-6 w-6" />,
+  'url-evaluation': <Globe className="h-6 w-6" />,
+  'scenario': <Globe className="h-6 w-6" />,
+  'password-evaluation': <Lock className="h-6 w-6" />,
+  'in-person': <Users className="h-6 w-6" />,
 };
 
+// ============================================
+// Sub-Renderers for each scenario type
+// Each receives typed content — no `as any`
+// ============================================
+
+function EmailRenderer({ scenario }: { scenario: TrainingScenario }) {
+  let email = asEmail(scenario);
+
+  return (
+    <div className="cyber-card p-6">
+      <div className="border-b border-cyber-700/50 pb-4 mb-4">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center space-x-2">
+            <span className="text-cyber-400 text-sm">From:</span>
+            <span className="text-cyber-200 font-medium">{email.from}</span>
+            <span className="text-cyber-500 text-sm">&lt;{email.fromEmail}&gt;</span>
+          </div>
+        </div>
+        <div className="flex items-center space-x-2 mb-2">
+          <span className="text-cyber-400 text-sm">To:</span>
+          <span className="text-cyber-300">{email.to}</span>
+        </div>
+        <div className="flex items-center space-x-2">
+          <span className="text-cyber-400 text-sm">Subject:</span>
+          <span className="text-cyber-100 font-semibold">{email.subject}</span>
+        </div>
+      </div>
+      <div className="bg-cyber-800/30 rounded-lg p-4">
+        <pre className="whitespace-pre-wrap text-cyber-200 font-sans text-sm leading-relaxed">
+          {email.body}
+        </pre>
+        {email.attachments && email.attachments.length > 0 && (
+          <div className="mt-4 pt-4 border-t border-cyber-700/50">
+            <span className="text-cyber-400 text-sm">Attachments: </span>
+            <span className="text-yellow-400 text-sm">{email.attachments.join(', ')}</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SMSRenderer({ scenario }: { scenario: TrainingScenario }) {
+  let sms = asSMS(scenario);
+
+  return (
+    <div className="cyber-card p-6">
+      <div className="max-w-sm mx-auto">
+        <div className="bg-cyber-800/50 rounded-2xl p-4">
+          <div className="text-center text-cyber-400 text-sm mb-3">{sms.sender}</div>
+          <div className="bg-green-600/20 border border-green-500/30 rounded-2xl rounded-tl-sm p-4">
+            <p className="text-cyber-100 text-sm">{sms.message}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ConversationRenderer({
+  scenario,
+  onAnswer,
+  selectedAnswer,
+  showResult,
+}: {
+  scenario: TrainingScenario;
+  onAnswer: (id: string) => void;
+  selectedAnswer: string | null;
+  showResult: boolean;
+}) {
+  let isPhone = scenario.type === 'phone-call';
+  let lines: ConversationLine[] = [];
+  let options: ScenarioOption[] = [];
+  let contextText = '';
+  let speakerLabel = 'Unknown';
+
+  if (isPhone) {
+    let content = asPhoneCall(scenario);
+    lines = content.conversation || [];
+    options = content.options || [];
+    contextText = content.scenario;
+    speakerLabel = content.callerName || 'Caller';
+  } else {
+    let content = asInPerson(scenario);
+    lines = content.encounter || [];
+    options = content.options || [];
+    contextText = content.scenario;
+    speakerLabel = 'Stranger';
+  }
+
+  return (
+    <div className="cyber-card p-6">
+      <div className="bg-cyber-800/30 rounded-lg p-4 mb-4">
+        <p className="text-cyber-300 italic">{contextText}</p>
+      </div>
+      <div className="space-y-3 mb-6">
+        {lines.map((line, idx) => (
+          <div key={idx} className={cn(
+            "p-3 rounded-lg",
+            line.speaker === 'caller' || line.speaker === 'stranger'
+              ? "bg-red-500/10 border border-red-500/20 ml-0 mr-12"
+              : "bg-cyber-500/10 border border-cyber-500/20 ml-12 mr-0"
+          )}>
+            <span className="text-xs text-cyber-400 uppercase mb-1 block">{speakerLabel}</span>
+            <p className="text-cyber-200 text-sm">{line.text}</p>
+          </div>
+        ))}
+      </div>
+      <OptionsRenderer
+        options={options}
+        onAnswer={onAnswer}
+        selectedAnswer={selectedAnswer}
+        showResult={showResult}
+      />
+    </div>
+  );
+}
+
+function URLEvaluationRenderer({
+  scenario,
+  onAnswer,
+  selectedAnswer,
+  showResult,
+}: {
+  scenario: TrainingScenario;
+  onAnswer: (id: string) => void;
+  selectedAnswer: string | null;
+  showResult: boolean;
+}) {
+  let content = asURLEvaluation(scenario);
+
+  return (
+    <div className="cyber-card p-6">
+      <p className="text-cyber-300 mb-6">{content.instruction}</p>
+      <div className="space-y-3">
+        {content.urls.map((urlOpt: URLOption) => (
+          <button
+            key={urlOpt.id}
+            onClick={() => onAnswer(urlOpt.id)}
+            disabled={showResult}
+            className={cn(
+              "w-full p-4 rounded-lg text-left transition-all font-mono text-sm",
+              showResult
+                ? urlOpt.safe
+                  ? "bg-green-500/20 border-2 border-green-500"
+                  : selectedAnswer === urlOpt.id
+                    ? "bg-red-500/20 border-2 border-red-500"
+                    : "bg-cyber-800/30 border border-cyber-700/50 opacity-50"
+                : selectedAnswer === urlOpt.id
+                  ? "bg-cyber-600/30 border-2 border-cyber-500"
+                  : "bg-cyber-800/30 border border-cyber-700/50 hover:border-cyber-500/50 hover:bg-cyber-700/30"
+            )}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-cyber-200">{urlOpt.url}</span>
+              {showResult && (
+                urlOpt.safe
+                  ? <CheckCircle className="h-5 w-5 text-green-400" />
+                  : selectedAnswer === urlOpt.id && <XCircle className="h-5 w-5 text-red-400" />
+              )}
+            </div>
+            {showResult && !urlOpt.safe && (
+              <p className="text-xs text-red-400 mt-2">{urlOpt.reason}</p>
+            )}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PasswordEvaluationRenderer({
+  scenario,
+  onAnswer,
+  selectedAnswer,
+  showResult,
+}: {
+  scenario: TrainingScenario;
+  onAnswer: (id: string) => void;
+  selectedAnswer: string | null;
+  showResult: boolean;
+}) {
+  let content = asPasswordEvaluation(scenario);
+
+  return (
+    <div className="cyber-card p-6">
+      <p className="text-cyber-300 mb-6">{content.instruction}</p>
+      <div className="space-y-3">
+        {content.passwords.map((pwd: PasswordOption) => (
+          <button
+            key={pwd.id}
+            onClick={() => onAnswer(pwd.id)}
+            disabled={showResult}
+            className={cn(
+              "w-full p-4 rounded-lg text-left transition-all",
+              showResult
+                ? pwd.id === content.correctAnswer
+                  ? "bg-green-500/20 border-2 border-green-500"
+                  : selectedAnswer === pwd.id
+                    ? "bg-red-500/20 border-2 border-red-500"
+                    : "bg-cyber-800/30 border border-cyber-700/50 opacity-50"
+                : selectedAnswer === pwd.id
+                  ? "bg-cyber-600/30 border-2 border-cyber-500"
+                  : "bg-cyber-800/30 border border-cyber-700/50 hover:border-cyber-500/50 hover:bg-cyber-700/30"
+            )}
+          >
+            <div className="flex items-center justify-between">
+              <code className="text-cyber-200 bg-cyber-900/50 px-2 py-1 rounded">{pwd.password}</code>
+              <span className={cn(
+                "text-xs px-2 py-1 rounded-full",
+                pwd.strength === 'strong' ? "bg-green-500/20 text-green-400" :
+                pwd.strength === 'medium' ? "bg-yellow-500/20 text-yellow-400" :
+                "bg-red-500/20 text-red-400"
+              )}>
+                {pwd.strength}
+              </span>
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function MultipleChoiceRenderer({
+  scenario,
+  onAnswer,
+  selectedAnswer,
+  showResult,
+}: {
+  scenario: TrainingScenario;
+  onAnswer: (id: string) => void;
+  selectedAnswer: string | null;
+  showResult: boolean;
+}) {
+  let content = asMultipleChoice(scenario);
+
+  return (
+    <div className="cyber-card p-6">
+      <p className="text-cyber-300 mb-4">{content.scenario}</p>
+      <p className="text-cyber-100 font-medium mb-6">{content.question}</p>
+      <OptionsRenderer
+        options={content.options}
+        onAnswer={onAnswer}
+        selectedAnswer={selectedAnswer}
+        showResult={showResult}
+      />
+    </div>
+  );
+}
+
+// Shared options grid used by scenario, phone-call, in-person
+function OptionsRenderer({
+  options,
+  onAnswer,
+  selectedAnswer,
+  showResult,
+}: {
+  options: ScenarioOption[];
+  onAnswer: (id: string) => void;
+  selectedAnswer: string | null;
+  showResult: boolean;
+}) {
+  return (
+    <div className="space-y-3">
+      {options.map((option) => (
+        <button
+          key={option.id}
+          onClick={() => onAnswer(option.id)}
+          disabled={showResult}
+          className={cn(
+            "w-full p-4 rounded-lg text-left transition-all",
+            showResult
+              ? option.isCorrect
+                ? "bg-green-500/20 border-2 border-green-500"
+                : selectedAnswer === option.id
+                  ? "bg-red-500/20 border-2 border-red-500"
+                  : "bg-cyber-800/30 border border-cyber-700/50 opacity-50"
+              : selectedAnswer === option.id
+                ? "bg-cyber-600/30 border-2 border-cyber-500"
+                : "bg-cyber-800/30 border border-cyber-700/50 hover:border-cyber-500/50 hover:bg-cyber-700/30"
+          )}
+        >
+          <div className="flex items-start space-x-3">
+            <span className="text-cyber-400 font-medium">{option.id.toUpperCase()}.</span>
+            <span className="text-cyber-200">{option.text}</span>
+            {showResult && option.isCorrect && (
+              <CheckCircle className="h-5 w-5 text-green-400 ml-auto flex-shrink-0" />
+            )}
+            {showResult && selectedAnswer === option.id && !option.isCorrect && (
+              <XCircle className="h-5 w-5 text-red-400 ml-auto flex-shrink-0" />
+            )}
+          </div>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// Phishing judgment buttons (shared by email and sms)
+function PhishingJudgmentButtons({
+  onAnswer,
+}: {
+  onAnswer: (answer: string) => void;
+}) {
+  return (
+    <div className="grid grid-cols-2 gap-4">
+      <button
+        onClick={() => onAnswer('phishing')}
+        className="cyber-card p-6 text-center hover:bg-red-500/10 hover:border-red-500/50 transition-all group"
+      >
+        <AlertTriangle className="h-10 w-10 text-red-400 mx-auto mb-3 group-hover:scale-110 transition-transform" />
+        <span className="text-lg font-semibold text-cyber-100">This is Phishing</span>
+        <p className="text-sm text-cyber-400 mt-1">This looks suspicious</p>
+      </button>
+      <button
+        onClick={() => onAnswer('legitimate')}
+        className="cyber-card p-6 text-center hover:bg-green-500/10 hover:border-green-500/50 transition-all group"
+      >
+        <CheckCircle className="h-10 w-10 text-green-400 mx-auto mb-3 group-hover:scale-110 transition-transform" />
+        <span className="text-lg font-semibold text-cyber-100">This is Legitimate</span>
+        <p className="text-sm text-cyber-400 mt-1">This looks safe</p>
+      </button>
+    </div>
+  );
+}
+
+// Result feedback after answering
+function ResultFeedback({
+  scenario,
+  wasCorrect,
+  onNext,
+  isLast,
+}: {
+  scenario: TrainingScenario;
+  wasCorrect: boolean;
+  onNext: () => void;
+  isLast: boolean;
+}) {
+  return (
+    <div className="space-y-4">
+      {/* Correct/Incorrect Banner */}
+      <div className={cn(
+        "cyber-card p-6",
+        wasCorrect ? "bg-green-500/10 border-green-500/50" : "bg-red-500/10 border-red-500/50"
+      )}>
+        <div className="flex items-center space-x-3 mb-4">
+          {wasCorrect ? (
+            <>
+              <CheckCircle className="h-8 w-8 text-green-400" />
+              <span className="text-xl font-bold text-green-400">Correct!</span>
+            </>
+          ) : (
+            <>
+              <XCircle className="h-8 w-8 text-red-400" />
+              <span className="text-xl font-bold text-red-400">Incorrect</span>
+            </>
+          )}
+        </div>
+        <p className="text-cyber-200">{scenario.explanation}</p>
+      </div>
+
+      {/* Red Flags */}
+      {scenario.redFlags.length > 0 && (
+        <div className="cyber-card p-6">
+          <h3 className="flex items-center space-x-2 text-lg font-semibold text-cyber-100 mb-4">
+            <AlertTriangle className="h-5 w-5 text-yellow-400" />
+            <span>Red Flags to Watch For</span>
+          </h3>
+          <ul className="space-y-2">
+            {scenario.redFlags.map((flag, idx) => (
+              <li key={idx} className="flex items-start space-x-2 text-sm">
+                <span className="text-yellow-400 mt-0.5">•</span>
+                <span className="text-cyber-300">{flag}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Learning Points */}
+      <div className="cyber-card p-6">
+        <h3 className="flex items-center space-x-2 text-lg font-semibold text-cyber-100 mb-4">
+          <Lightbulb className="h-5 w-5 text-cyan-400" />
+          <span>Key Learning Points</span>
+        </h3>
+        <ul className="space-y-2">
+          {scenario.learningPoints.map((point, idx) => (
+            <li key={idx} className="flex items-start space-x-2 text-sm">
+              <CheckCircle className="h-4 w-4 text-cyan-400 mt-0.5 flex-shrink-0" />
+              <span className="text-cyber-300">{point}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Next Button */}
+      <div className="text-center pt-4">
+        <button onClick={onNext} className="cyber-button inline-flex items-center space-x-2">
+          <span>{isLast ? 'See Results' : 'Next Scenario'}</span>
+          <ArrowRight className="h-5 w-5" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ============================================
+// Main Training Module Page
+// ============================================
+
 export default function TrainingModulePage() {
-  const params = useParams();
-  const router = useRouter();
-  const moduleId = params.id as string;
+  let params = useParams();
+  let router = useRouter();
+  let moduleId = params.id as string;
 
-  const { getModule, updateModuleStatus, updateModuleScore } = useModulesStore();
-  const { startSession, endSession, score } = useSessionStore();
-  const { updateModuleProgress, addXP, updateStreak } = useProgressStore();
-  const { profile: vulnProfile, recordResult, finishSession: finishVulnSession, getRecentScenarioIds } = useVulnerabilityStore();
+  let { getModule, updateModuleStatus, updateModuleScore } = useModulesStore();
+  let { startSession, endSession } = useSessionStore();
+  let { updateModuleProgress, addXP, updateStreak } = useProgressStore();
+  let { profile: vulnProfile, recordResult, finishSession: finishVulnSession, getRecentScenarioIds } = useVulnerabilityStore();
 
-  const module = getModule(moduleId);
+  let module = getModule(moduleId);
 
-  const [phase, setPhase] = useState<TrainingPhase>('intro');
-  const [scenarios, setScenarios] = useState<TrainingScenario[]>([]);
-  const [scenarioIndex, setScenarioIndex] = useState(0);
-  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
-  const [showResult, setShowResult] = useState(false);
-  const [sessionFeedback, setSessionFeedback] = useState<SessionFeedback | null>(null);
-  const [correctAnswers, setCorrectAnswers] = useState(0);
-  const [answeredScenarios, setAnsweredScenarios] = useState<{ correct: boolean; scenario: TrainingScenario }[]>([]);
+  let [phase, setPhase] = useState<TrainingPhase>('intro');
+  let [scenarios, setScenarios] = useState<TrainingScenario[]>([]);
+  let [scenarioIndex, setScenarioIndex] = useState(0);
+  let [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  let [showResult, setShowResult] = useState(false);
+  let [sessionFeedback, setSessionFeedback] = useState<SessionFeedback | null>(null);
+  let [correctAnswers, setCorrectAnswers] = useState(0);
+  let [answeredScenarios, setAnsweredScenarios] = useState<{ correct: boolean; scenario: TrainingScenario }[]>([]);
 
-  const totalScenarios = 5;
-  const currentScenario = scenarios[scenarioIndex];
+  let totalScenarios = 5;
+  let currentScenario = scenarios[scenarioIndex];
 
-  // Initialize scenarios when training starts (adaptive engine)
-  const initializeScenarios = () => {
-    const recentIds = getRecentScenarioIds(15);
-    const moduleScenarios = getAdaptiveScenarios(
+  // Build scenario set using adaptive engine
+  let initializeScenarios = () => {
+    let recentIds = getRecentScenarioIds(15);
+    let selected = getAdaptiveScenarios(
       module?.type || 'phishing',
       totalScenarios,
       vulnProfile,
       recentIds
     );
-    setScenarios(moduleScenarios);
+    setScenarios(selected);
   };
 
-  // Handle starting the training
-  const handleStartTraining = () => {
+  // Start a training session
+  let handleStartTraining = () => {
     initializeScenarios();
     startSession(moduleId);
     updateModuleStatus(moduleId, 'in-progress');
@@ -114,35 +531,21 @@ export default function TrainingModulePage() {
     setShowResult(false);
   };
 
-  // Handle user's answer for different scenario types
-  const handleAnswer = (answer: string) => {
-    if (showResult) return;
-    
+  // Process user answer - uses the pure checkAnswer function
+  let handleAnswer = (answer: string) => {
+    if (showResult || !currentScenario) return;
+
     setSelectedAnswer(answer);
     setShowResult(true);
 
-    let isCorrect = false;
-
-    // Determine if answer is correct based on scenario type
-    if (currentScenario.type === 'email' || currentScenario.type === 'sms') {
-      // For phishing scenarios: answer is "phishing" or "legitimate"
-      isCorrect = (answer === 'phishing') === currentScenario.isCorrectAnswer;
-    } else if (currentScenario.content && 'options' in currentScenario.content) {
-      // For multiple choice scenarios
-      const options = currentScenario.content.options as { id: string; isCorrect: boolean }[];
-      const selectedOption = options.find(o => o.id === answer);
-      isCorrect = selectedOption?.isCorrect || false;
-    } else if (currentScenario.content && 'correctAnswer' in currentScenario.content) {
-      // For URL evaluation or password evaluation
-      isCorrect = answer === currentScenario.content.correctAnswer;
-    }
+    let isCorrect = checkAnswer(currentScenario, answer);
 
     if (isCorrect) {
-      setCorrectAnswers((prev) => prev + 1);
+      setCorrectAnswers(prev => prev + 1);
     }
 
     // Record into adaptive vulnerability tracker
-    const vulnResult: ScenarioResult = {
+    let vulnResult: ScenarioResult = {
       scenarioId: currentScenario.id,
       moduleType: currentScenario.moduleType,
       redFlags: currentScenario.redFlags,
@@ -151,34 +554,34 @@ export default function TrainingModulePage() {
     };
     recordResult(vulnResult);
 
-    setAnsweredScenarios((prev) => [...prev, { correct: isCorrect, scenario: currentScenario }]);
+    setAnsweredScenarios(prev => [...prev, { correct: isCorrect, scenario: currentScenario }]);
   };
 
-  // Handle moving to next scenario
-  const handleNextScenario = () => {
+  // Advance to next scenario or finish
+  let handleNextScenario = () => {
     if (scenarioIndex + 1 >= totalScenarios) {
       finishTraining();
     } else {
-      setScenarioIndex((prev) => prev + 1);
+      setScenarioIndex(prev => prev + 1);
       setSelectedAnswer(null);
       setShowResult(false);
     }
   };
 
-  // Finish training and show results
-  const finishTraining = () => {
-    const finalScore = Math.round((correctAnswers / totalScenarios) * 100);
-    const passed = finalScore >= (module?.requiredScore || 70);
+  // Wrap up training and compute results
+  let finishTraining = () => {
+    let finalScore = Math.round((correctAnswers / totalScenarios) * 100);
+    let passed = finalScore >= (module?.requiredScore || 70);
 
-    const missedRedFlags = answeredScenarios
+    let missedRedFlags = answeredScenarios
       .filter(a => !a.correct)
       .flatMap(a => a.scenario.redFlags.slice(0, 2));
 
-    const identifiedRedFlags = answeredScenarios
+    let identifiedRedFlags = answeredScenarios
       .filter(a => a.correct)
       .flatMap(a => a.scenario.redFlags.slice(0, 1));
 
-    const feedback: SessionFeedback = {
+    let feedback: SessionFeedback = {
       overallScore: finalScore,
       maxScore: 100,
       correctActions: correctAnswers,
@@ -213,17 +616,17 @@ export default function TrainingModulePage() {
       updateModuleStatus(moduleId, 'completed');
     }
 
-    // Mark adaptive engine session as complete (counts toward calibration)
     finishVulnSession();
-
     setPhase('results');
   };
 
-  // Handle retry
-  const handleRetry = () => {
+  // Retry the module
+  let handleRetry = () => {
     setSessionFeedback(null);
     handleStartTraining();
   };
+
+  // -- Not Found State --
 
   if (!module) {
     return (
@@ -241,15 +644,23 @@ export default function TrainingModulePage() {
     );
   }
 
-  // Render different scenario types
-  const renderScenarioContent = () => {
+  // -- Determine if the last answer was correct (for result feedback) --
+
+  let lastAnswerCorrect = false;
+  if (showResult && currentScenario && selectedAnswer) {
+    lastAnswerCorrect = checkAnswer(currentScenario, selectedAnswer);
+  }
+
+  // -- Render Scenario Content --
+
+  let renderScenarioContent = () => {
     if (!currentScenario) return null;
 
-    const { type, content, title, image } = currentScenario;
+    let { type, title, image } = currentScenario;
 
     return (
       <div className="space-y-6">
-        {/* Scenario Header */}
+        {/* Scenario Header with Image */}
         <div className="cyber-card overflow-hidden">
           <div className="relative h-48 md:h-56">
             <Image
@@ -263,7 +674,7 @@ export default function TrainingModulePage() {
             <div className="absolute bottom-0 left-0 right-0 p-6">
               <div className="flex items-center space-x-3 mb-2">
                 <div className="p-2 bg-cyber-800/80 backdrop-blur-sm rounded-lg text-cyber-400">
-                  {getScenarioIcon(type)}
+                  {scenarioIconMap[type] || <Shield className="h-6 w-6" />}
                 </div>
                 <span className="text-sm font-medium text-cyber-400 uppercase tracking-wide">
                   {type.replace('-', ' ')} Scenario
@@ -274,301 +685,59 @@ export default function TrainingModulePage() {
           </div>
         </div>
 
-        {/* Scenario Content Based on Type */}
-        {(type === 'email') && (
-          <div className="cyber-card p-6">
-            <div className="border-b border-cyber-700/50 pb-4 mb-4">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center space-x-2">
-                  <span className="text-cyber-400 text-sm">From:</span>
-                  <span className="text-cyber-200 font-medium">{(content as any).from}</span>
-                  <span className="text-cyber-500 text-sm">&lt;{(content as any).fromEmail}&gt;</span>
-                </div>
-              </div>
-              <div className="flex items-center space-x-2 mb-2">
-                <span className="text-cyber-400 text-sm">To:</span>
-                <span className="text-cyber-300">{(content as any).to}</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <span className="text-cyber-400 text-sm">Subject:</span>
-                <span className="text-cyber-100 font-semibold">{(content as any).subject}</span>
-              </div>
-            </div>
-            <div className="bg-cyber-800/30 rounded-lg p-4">
-              <pre className="whitespace-pre-wrap text-cyber-200 font-sans text-sm leading-relaxed">
-                {(content as any).body}
-              </pre>
-              {(content as any).attachments && (
-                <div className="mt-4 pt-4 border-t border-cyber-700/50">
-                  <span className="text-cyber-400 text-sm">Attachments: </span>
-                  <span className="text-yellow-400 text-sm">{(content as any).attachments.join(', ')}</span>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {(type === 'sms') && (
-          <div className="cyber-card p-6">
-            <div className="max-w-sm mx-auto">
-              <div className="bg-cyber-800/50 rounded-2xl p-4">
-                <div className="text-center text-cyber-400 text-sm mb-3">{(content as any).sender}</div>
-                <div className="bg-green-600/20 border border-green-500/30 rounded-2xl rounded-tl-sm p-4">
-                  <p className="text-cyber-100 text-sm">{(content as any).message}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Type-specific content renderers */}
+        {type === 'email' && <EmailRenderer scenario={currentScenario} />}
+        {type === 'sms' && <SMSRenderer scenario={currentScenario} />}
 
         {(type === 'phone-call' || type === 'in-person') && (
-          <div className="cyber-card p-6">
-            <div className="bg-cyber-800/30 rounded-lg p-4 mb-4">
-              <p className="text-cyber-300 italic">{(content as any).scenario}</p>
-            </div>
-            <div className="space-y-3">
-              {(content as any).conversation?.map((line: any, idx: number) => (
-                <div key={idx} className={cn(
-                  "p-3 rounded-lg",
-                  line.speaker === 'caller' || line.speaker === 'stranger'
-                    ? "bg-red-500/10 border border-red-500/20 ml-0 mr-12"
-                    : "bg-cyber-500/10 border border-cyber-500/20 ml-12 mr-0"
-                )}>
-                  <span className="text-xs text-cyber-400 uppercase mb-1 block">
-                    {line.speaker === 'caller' ? (content as any).callerName || 'Caller' : 'Unknown'}
-                  </span>
-                  <p className="text-cyber-200 text-sm">{line.text}</p>
-                </div>
-              )) || (content as any).encounter?.map((line: any, idx: number) => (
-                <div key={idx} className="p-3 rounded-lg bg-red-500/10 border border-red-500/20">
-                  <span className="text-xs text-cyber-400 uppercase mb-1 block">Stranger</span>
-                  <p className="text-cyber-200 text-sm">{line.text}</p>
-                </div>
-              ))}
-            </div>
-          </div>
+          <ConversationRenderer
+            scenario={currentScenario}
+            onAnswer={handleAnswer}
+            selectedAnswer={selectedAnswer}
+            showResult={showResult}
+          />
         )}
 
-        {(type === 'url-evaluation') && (
-          <div className="cyber-card p-6">
-            <p className="text-cyber-300 mb-6">{(content as any).instruction}</p>
-            <div className="space-y-3">
-              {(content as any).urls?.map((urlOption: any) => (
-                <button
-                  key={urlOption.id}
-                  onClick={() => handleAnswer(urlOption.id)}
-                  disabled={showResult}
-                  className={cn(
-                    "w-full p-4 rounded-lg text-left transition-all font-mono text-sm",
-                    showResult
-                      ? urlOption.safe
-                        ? "bg-green-500/20 border-2 border-green-500"
-                        : selectedAnswer === urlOption.id
-                          ? "bg-red-500/20 border-2 border-red-500"
-                          : "bg-cyber-800/30 border border-cyber-700/50 opacity-50"
-                      : selectedAnswer === urlOption.id
-                        ? "bg-cyber-600/30 border-2 border-cyber-500"
-                        : "bg-cyber-800/30 border border-cyber-700/50 hover:border-cyber-500/50 hover:bg-cyber-700/30"
-                  )}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-cyber-200">{urlOption.url}</span>
-                    {showResult && (
-                      urlOption.safe
-                        ? <CheckCircle className="h-5 w-5 text-green-400" />
-                        : selectedAnswer === urlOption.id && <XCircle className="h-5 w-5 text-red-400" />
-                    )}
-                  </div>
-                  {showResult && !urlOption.safe && (
-                    <p className="text-xs text-red-400 mt-2">{urlOption.reason}</p>
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
+        {type === 'url-evaluation' && (
+          <URLEvaluationRenderer
+            scenario={currentScenario}
+            onAnswer={handleAnswer}
+            selectedAnswer={selectedAnswer}
+            showResult={showResult}
+          />
         )}
 
-        {(type === 'password-evaluation') && (
-          <div className="cyber-card p-6">
-            <p className="text-cyber-300 mb-6">{(content as any).instruction}</p>
-            <div className="space-y-3">
-              {(content as any).passwords?.map((pwdOption: any) => (
-                <button
-                  key={pwdOption.id}
-                  onClick={() => handleAnswer(pwdOption.id)}
-                  disabled={showResult}
-                  className={cn(
-                    "w-full p-4 rounded-lg text-left transition-all",
-                    showResult
-                      ? pwdOption.id === (content as any).correctAnswer
-                        ? "bg-green-500/20 border-2 border-green-500"
-                        : selectedAnswer === pwdOption.id
-                          ? "bg-red-500/20 border-2 border-red-500"
-                          : "bg-cyber-800/30 border border-cyber-700/50 opacity-50"
-                      : selectedAnswer === pwdOption.id
-                        ? "bg-cyber-600/30 border-2 border-cyber-500"
-                        : "bg-cyber-800/30 border border-cyber-700/50 hover:border-cyber-500/50 hover:bg-cyber-700/30"
-                  )}
-                >
-                  <div className="flex items-center justify-between">
-                    <code className="text-cyber-200 bg-cyber-900/50 px-2 py-1 rounded">{pwdOption.password}</code>
-                    <span className={cn(
-                      "text-xs px-2 py-1 rounded-full",
-                      pwdOption.strength === 'strong' ? "bg-green-500/20 text-green-400" :
-                      pwdOption.strength === 'medium' ? "bg-yellow-500/20 text-yellow-400" :
-                      "bg-red-500/20 text-red-400"
-                    )}>
-                      {pwdOption.strength}
-                    </span>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
+        {type === 'password-evaluation' && (
+          <PasswordEvaluationRenderer
+            scenario={currentScenario}
+            onAnswer={handleAnswer}
+            selectedAnswer={selectedAnswer}
+            showResult={showResult}
+          />
         )}
 
-        {(type === 'scenario' && 'options' in content) && (
-          <div className="cyber-card p-6">
-            <p className="text-cyber-300 mb-4">{(content as any).scenario}</p>
-            <p className="text-cyber-100 font-medium mb-6">{(content as any).question}</p>
-            <div className="space-y-3">
-              {(content as any).options?.map((option: any) => (
-                <button
-                  key={option.id}
-                  onClick={() => handleAnswer(option.id)}
-                  disabled={showResult}
-                  className={cn(
-                    "w-full p-4 rounded-lg text-left transition-all",
-                    showResult
-                      ? option.isCorrect
-                        ? "bg-green-500/20 border-2 border-green-500"
-                        : selectedAnswer === option.id
-                          ? "bg-red-500/20 border-2 border-red-500"
-                          : "bg-cyber-800/30 border border-cyber-700/50 opacity-50"
-                      : selectedAnswer === option.id
-                        ? "bg-cyber-600/30 border-2 border-cyber-500"
-                        : "bg-cyber-800/30 border border-cyber-700/50 hover:border-cyber-500/50 hover:bg-cyber-700/30"
-                  )}
-                >
-                  <div className="flex items-start space-x-3">
-                    <span className="text-cyber-400 font-medium">{option.id.toUpperCase()}.</span>
-                    <span className="text-cyber-200">{option.text}</span>
-                    {showResult && option.isCorrect && (
-                      <CheckCircle className="h-5 w-5 text-green-400 ml-auto flex-shrink-0" />
-                    )}
-                    {showResult && selectedAnswer === option.id && !option.isCorrect && (
-                      <XCircle className="h-5 w-5 text-red-400 ml-auto flex-shrink-0" />
-                    )}
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
+        {type === 'scenario' && (
+          <MultipleChoiceRenderer
+            scenario={currentScenario}
+            onAnswer={handleAnswer}
+            selectedAnswer={selectedAnswer}
+            showResult={showResult}
+          />
         )}
 
-        {/* Phishing Detection Buttons (for email/sms) */}
-        {(type === 'email' || type === 'sms') && !showResult && (
-          <div className="grid grid-cols-2 gap-4">
-            <button
-              onClick={() => handleAnswer('phishing')}
-              className="cyber-card p-6 text-center hover:bg-red-500/10 hover:border-red-500/50 transition-all group"
-            >
-              <AlertTriangle className="h-10 w-10 text-red-400 mx-auto mb-3 group-hover:scale-110 transition-transform" />
-              <span className="text-lg font-semibold text-cyber-100">This is Phishing</span>
-              <p className="text-sm text-cyber-400 mt-1">This looks suspicious</p>
-            </button>
-            <button
-              onClick={() => handleAnswer('legitimate')}
-              className="cyber-card p-6 text-center hover:bg-green-500/10 hover:border-green-500/50 transition-all group"
-            >
-              <CheckCircle className="h-10 w-10 text-green-400 mx-auto mb-3 group-hover:scale-110 transition-transform" />
-              <span className="text-lg font-semibold text-cyber-100">This is Legitimate</span>
-              <p className="text-sm text-cyber-400 mt-1">This looks safe</p>
-            </button>
-          </div>
+        {/* Phishing Judgment Buttons (email/sms only, before answering) */}
+        {isPhishingJudgment(type) && !showResult && (
+          <PhishingJudgmentButtons onAnswer={handleAnswer} />
         )}
 
-        {/* Result Feedback */}
+        {/* Result Feedback (after answering) */}
         {showResult && (
-          <div className="space-y-4">
-            {/* Correct/Incorrect Banner */}
-            <div className={cn(
-              "cyber-card p-6",
-              (selectedAnswer === 'phishing' && currentScenario.isCorrectAnswer) ||
-              (selectedAnswer === 'legitimate' && !currentScenario.isCorrectAnswer) ||
-              (currentScenario.content && 'options' in currentScenario.content && 
-                (currentScenario.content as any).options?.find((o: any) => o.id === selectedAnswer)?.isCorrect) ||
-              (currentScenario.content && 'correctAnswer' in currentScenario.content && 
-                selectedAnswer === (currentScenario.content as any).correctAnswer)
-                ? "bg-green-500/10 border-green-500/50"
-                : "bg-red-500/10 border-red-500/50"
-            )}>
-              <div className="flex items-center space-x-3 mb-4">
-                {((selectedAnswer === 'phishing' && currentScenario.isCorrectAnswer) ||
-                  (selectedAnswer === 'legitimate' && !currentScenario.isCorrectAnswer) ||
-                  (currentScenario.content && 'options' in currentScenario.content && 
-                    (currentScenario.content as any).options?.find((o: any) => o.id === selectedAnswer)?.isCorrect) ||
-                  (currentScenario.content && 'correctAnswer' in currentScenario.content && 
-                    selectedAnswer === (currentScenario.content as any).correctAnswer)) ? (
-                  <>
-                    <CheckCircle className="h-8 w-8 text-green-400" />
-                    <span className="text-xl font-bold text-green-400">Correct!</span>
-                  </>
-                ) : (
-                  <>
-                    <XCircle className="h-8 w-8 text-red-400" />
-                    <span className="text-xl font-bold text-red-400">Incorrect</span>
-                  </>
-                )}
-              </div>
-              <p className="text-cyber-200">{currentScenario.explanation}</p>
-            </div>
-
-            {/* Red Flags */}
-            {currentScenario.redFlags.length > 0 && (
-              <div className="cyber-card p-6">
-                <h3 className="flex items-center space-x-2 text-lg font-semibold text-cyber-100 mb-4">
-                  <AlertTriangle className="h-5 w-5 text-yellow-400" />
-                  <span>Red Flags to Watch For</span>
-                </h3>
-                <ul className="space-y-2">
-                  {currentScenario.redFlags.map((flag, idx) => (
-                    <li key={idx} className="flex items-start space-x-2 text-sm">
-                      <span className="text-yellow-400 mt-0.5">•</span>
-                      <span className="text-cyber-300">{flag}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {/* Learning Points */}
-            <div className="cyber-card p-6">
-              <h3 className="flex items-center space-x-2 text-lg font-semibold text-cyber-100 mb-4">
-                <Lightbulb className="h-5 w-5 text-cyan-400" />
-                <span>Key Learning Points</span>
-              </h3>
-              <ul className="space-y-2">
-                {currentScenario.learningPoints.map((point, idx) => (
-                  <li key={idx} className="flex items-start space-x-2 text-sm">
-                    <CheckCircle className="h-4 w-4 text-cyan-400 mt-0.5 flex-shrink-0" />
-                    <span className="text-cyber-300">{point}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Next Button */}
-            <div className="text-center pt-4">
-              <button
-                onClick={handleNextScenario}
-                className="cyber-button inline-flex items-center space-x-2"
-              >
-                <span>{scenarioIndex + 1 >= totalScenarios ? 'See Results' : 'Next Scenario'}</span>
-                <ArrowRight className="h-5 w-5" />
-              </button>
-            </div>
-          </div>
+          <ResultFeedback
+            scenario={currentScenario}
+            wasCorrect={lastAnswerCorrect}
+            onNext={handleNextScenario}
+            isLast={scenarioIndex + 1 >= totalScenarios}
+          />
         )}
       </div>
     );
@@ -633,7 +802,7 @@ export default function TrainingModulePage() {
                 <div className="bg-cyber-800/30 rounded-xl p-6 mb-8">
                   <h3 className="flex items-center space-x-2 font-semibold text-cyber-200 mb-4">
                     <Zap className="h-5 w-5 text-yellow-400" />
-                    <span>What You'll Learn</span>
+                    <span>What You&apos;ll Learn</span>
                   </h3>
                   <div className="grid md:grid-cols-2 gap-3">
                     {module.skills.map((skill) => (
@@ -647,8 +816,8 @@ export default function TrainingModulePage() {
 
                 {/* Start Button */}
                 <div className="text-center">
-                  <button 
-                    onClick={handleStartTraining} 
+                  <button
+                    onClick={handleStartTraining}
                     className="cyber-button text-lg px-10 py-4 inline-flex items-center space-x-3"
                   >
                     <Shield className="h-6 w-6" />
