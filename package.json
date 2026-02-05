@@ -1,6 +1,6 @@
 {
   "name": "cybershield",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "private": true,
   "description": "AI-powered cybersecurity training platform with adaptive difficulty engine, vulnerability profiling, and personalized scenario targeting",
   "keywords": [
