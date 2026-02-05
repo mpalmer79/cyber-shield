@@ -132,7 +132,7 @@ export default function HomePage() {
               {/* Badge */}
               <div className="inline-flex items-center space-x-2 px-4 py-2 bg-cyber-500/10 backdrop-blur-sm rounded-full border border-cyber-500/30 mb-8">
                 <div className="w-2 h-2 bg-cyber-400 rounded-full animate-pulse" />
-                <span className="text-sm text-cyber-300 font-medium">AI-Powered Security Training</span>
+                <span className="text-sm text-white/90 font-medium">AI-Powered Security Training</span>
               </div>
 
               {/* Headline */}
@@ -144,7 +144,7 @@ export default function HomePage() {
               </h1>
 
               {/* Subheadline */}
-              <p className="text-xl text-cyber-200/80 mb-10 max-w-2xl leading-relaxed">
+              <p className="text-xl text-white/80 mb-10 max-w-2xl leading-relaxed">
                 Interactive, AI-driven training that transforms your employees into your strongest 
                 line of defense against phishing, social engineering, and cyber attacks.
               </p>
@@ -163,19 +163,19 @@ export default function HomePage() {
                   href="/progress"
                   className="flex items-center space-x-3 px-8 py-4 bg-white/5 hover:bg-white/10 text-white font-medium rounded-xl transition-all duration-300 border border-white/10 hover:border-white/20 backdrop-blur-sm"
                 >
-                  <TrendingUp className="h-5 w-5 text-cyber-400" />
+                  <TrendingUp className="h-5 w-5 text-slate-300" />
                   <span>View Progress</span>
                 </Link>
               </div>
 
               {/* Trust Indicators */}
-              <div className="flex flex-wrap items-center gap-8 text-sm text-cyber-400">
+              <div className="flex flex-wrap items-center gap-8 text-sm text-slate-300">
                 <div className="flex items-center space-x-2">
                   <CheckCircle className="h-5 w-5 text-green-400" />
                   <span>Enterprise Architecture</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Shield className="h-5 w-5 text-cyber-400" />
+                  <Shield className="h-5 w-5 text-slate-300" />
                   <span>Adaptive AI Engine</span>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -193,39 +193,39 @@ export default function HomePage() {
         </div>
 
         {/* Scroll Indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center text-cyber-500 animate-bounce">
-          <span className="text-xs mb-2">Scroll to explore</span>
-          <ChevronRight className="h-5 w-5 rotate-90" />
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center space-y-2 animate-bounce">
+          <span className="text-xs text-slate-400">Scroll to explore</span>
+          <ChevronRight className="h-5 w-5 text-slate-400 rotate-90" />
         </div>
       </section>
 
-      {/* Quick Stats Bar */}
-      <section className="py-8 px-4 border-y border-cyber-800/50 bg-cyber-900/50 backdrop-blur-sm">
+      {/* Stats Bar */}
+      <section className="relative py-8 px-4 bg-cyber-900/50 border-y border-cyber-800/50">
         <div className="container mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="flex flex-wrap justify-center gap-12 md:gap-24">
             <div className="text-center">
               <div className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyber-400 to-cyan-400">
-                {progress.level}
+                {modules.length}
               </div>
-              <div className="text-sm text-cyber-500 mt-1">Current Level</div>
+              <div className="text-sm text-slate-400 mt-1">Training Modules</div>
             </div>
             <div className="text-center">
-              <div className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-400">
-                {progress.totalScore.toLocaleString()}
+              <div className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
+                60+
               </div>
-              <div className="text-sm text-cyber-500 mt-1">Total Score</div>
+              <div className="text-sm text-slate-400 mt-1">Real Scenarios</div>
             </div>
             <div className="text-center">
               <div className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-400">
                 {completedCount}
               </div>
-              <div className="text-sm text-cyber-500 mt-1">Modules Completed</div>
+              <div className="text-sm text-slate-400 mt-1">Modules Completed</div>
             </div>
             <div className="text-center">
               <div className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-400">
                 {progress.streak}
               </div>
-              <div className="text-sm text-cyber-500 mt-1">Day Streak</div>
+              <div className="text-sm text-slate-400 mt-1">Day Streak</div>
             </div>
           </div>
         </div>
@@ -239,13 +239,13 @@ export default function HomePage() {
               <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
                 Training Modules
               </h2>
-              <p className="text-cyber-400 max-w-xl">
+              <p className="text-slate-300 max-w-xl">
                 Master essential cybersecurity skills through interactive, AI-powered scenarios.
               </p>
             </div>
             <Link
               href="/training"
-              className="hidden md:flex items-center space-x-2 text-cyber-400 hover:text-cyber-300 transition-colors"
+              className="hidden md:flex items-center space-x-2 text-slate-300 hover:text-white transition-colors"
             >
               <span>View All</span>
               <ChevronRight className="h-4 w-4" />
@@ -266,7 +266,7 @@ export default function HomePage() {
           <div className="md:hidden mt-8 text-center">
             <Link
               href="/training"
-              className="inline-flex items-center space-x-2 text-cyber-400 hover:text-cyber-300 transition-colors"
+              className="inline-flex items-center space-x-2 text-slate-300 hover:text-white transition-colors"
             >
               <span>View All Modules</span>
               <ChevronRight className="h-4 w-4" />
@@ -315,11 +315,11 @@ export default function HomePage() {
 
         <div className="container mx-auto relative z-10">
           <div className="max-w-3xl mx-auto text-center">
-            <Award className="h-16 w-16 text-cyber-400 mx-auto mb-6" />
+            <Award className="h-16 w-16 text-slate-300 mx-auto mb-6" />
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
               Ready to Strengthen Your Security?
             </h2>
-            <p className="text-lg text-cyber-300 mb-8">
+            <p className="text-lg text-white/90 mb-8">
               Join thousands of professionals who have transformed their cybersecurity 
               awareness with CyberShield's AI-powered training platform.
             </p>
@@ -347,7 +347,7 @@ export default function HomePage() {
           <div className="grid lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
               <h2 className="text-2xl font-bold text-white mb-6 flex items-center space-x-3">
-                <Target className="h-6 w-6 text-cyber-400" />
+                <Target className="h-6 w-6 text-slate-300" />
                 <span>All Training Modules</span>
               </h2>
               <div className="grid sm:grid-cols-2 gap-4">
@@ -363,7 +363,7 @@ export default function HomePage() {
               <div className="mt-6 text-center">
                 <Link
                   href="/training"
-                  className="inline-flex items-center space-x-2 text-cyber-400 hover:text-cyber-300 transition-colors"
+                  className="inline-flex items-center space-x-2 text-slate-300 hover:text-white transition-colors"
                 >
                   <span>View All {modules.length} Modules</span>
                   <ChevronRight className="h-4 w-4" />
@@ -373,7 +373,7 @@ export default function HomePage() {
             
             <div>
               <h2 className="text-2xl font-bold text-white mb-6 flex items-center space-x-3">
-                <TrendingUp className="h-6 w-6 text-cyber-400" />
+                <TrendingUp className="h-6 w-6 text-slate-300" />
                 <span>Your Progress</span>
               </h2>
               <ProgressStats />
@@ -387,21 +387,21 @@ export default function HomePage() {
         <div className="container mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center space-x-3">
-              <Shield className="h-8 w-8 text-cyber-400" />
+              <Shield className="h-8 w-8 text-slate-300" />
               <div>
                 <span className="text-xl font-bold text-white">CyberShield</span>
-                <p className="text-xs text-cyber-500">AI-Powered Security Training</p>
+                <p className="text-xs text-slate-400">AI-Powered Security Training</p>
               </div>
             </div>
             
             <nav className="flex items-center space-x-8 text-sm">
-              <Link href="/training" className="text-cyber-400 hover:text-cyber-300 transition-colors">Training</Link>
-              <Link href="/progress" className="text-cyber-400 hover:text-cyber-300 transition-colors">Progress</Link>
-              <Link href="/leaderboard" className="text-cyber-400 hover:text-cyber-300 transition-colors">Leaderboard</Link>
-              <Link href="/settings" className="text-cyber-400 hover:text-cyber-300 transition-colors">Settings</Link>
+              <Link href="/training" className="text-slate-300 hover:text-white transition-colors">Training</Link>
+              <Link href="/progress" className="text-slate-300 hover:text-white transition-colors">Progress</Link>
+              <Link href="/leaderboard" className="text-slate-300 hover:text-white transition-colors">Leaderboard</Link>
+              <Link href="/settings" className="text-slate-300 hover:text-white transition-colors">Settings</Link>
             </nav>
 
-            <div className="text-sm text-cyber-600">
+            <div className="text-sm text-slate-500">
               © 2025 CyberShield. All rights reserved.
             </div>
           </div>
