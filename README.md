@@ -11,7 +11,7 @@ Enterprise-grade cybersecurity training platform powered by Claude AI. CyberShie
 
 ![CyberShield Hero](https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=1200&q=80)
 
-## 🏗️ Engineering Highlights 
+## 🏗️ Engineering Highlights  
 
 This project demonstrates principal-level software engineering across several disciplines:
 
