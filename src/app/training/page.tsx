@@ -135,8 +135,8 @@ export default function TrainingPage() {
           {/* Page Header */}
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-8 gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-cyber-100 mb-2">Training Modules</h1>
-              <p className="text-cyber-400">
+              <h1 className="text-3xl font-bold text-white mb-2">Training Modules</h1>
+              <p className="text-slate-300">
                 {activeView === 'tree'
                   ? 'Follow the skill tree to master cybersecurity from foundation to advanced.'
                   : 'Choose a module to begin your cybersecurity training journey.'}
@@ -153,8 +153,8 @@ export default function TrainingPage() {
                 className={cn(
                   "flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200",
                   activeView === 'tree'
-                    ? "bg-cyber-700/50 text-cyber-200 shadow-sm"
-                    : "text-cyber-500 hover:text-cyber-300"
+                    ? "bg-cyber-700/50 text-white shadow-sm"
+                    : "text-slate-400 hover:text-white"
                 )}
               >
                 <GitBranch className="h-4 w-4" />
@@ -168,8 +168,8 @@ export default function TrainingPage() {
                 className={cn(
                   "flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200",
                   activeView === 'grid'
-                    ? "bg-cyber-700/50 text-cyber-200 shadow-sm"
-                    : "text-cyber-500 hover:text-cyber-300"
+                    ? "bg-cyber-700/50 text-white shadow-sm"
+                    : "text-slate-400 hover:text-white"
                 )}
               >
                 <LayoutGrid className="h-4 w-4" />
@@ -198,7 +198,7 @@ export default function TrainingPage() {
                 <div className="flex flex-col lg:flex-row gap-4">
                   {/* Search */}
                   <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cyber-500" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                     <input
                       type="text"
                       placeholder="Search modules..."
@@ -211,14 +211,14 @@ export default function TrainingPage() {
                         onClick={() => setSearchQuery('')}
                         className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-cyber-700 rounded-full transition-colors"
                       >
-                        <X className="h-4 w-4 text-cyber-500" />
+                        <X className="h-4 w-4 text-slate-400" />
                       </button>
                     )}
                   </div>
 
                   {/* Difficulty Filter */}
                   <div className="flex items-center space-x-2">
-                    <Filter className="h-4 w-4 text-cyber-500" />
+                    <Filter className="h-4 w-4 text-slate-400" />
                     <select
                       value={difficultyFilter}
                       onChange={(e) => {
@@ -248,8 +248,8 @@ export default function TrainingPage() {
                       className={cn(
                         'flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200',
                         statusFilter === status.value
-                          ? 'bg-cyber-700/50 text-cyber-200 border border-cyber-600'
-                          : 'bg-cyber-800/30 text-cyber-400 border border-transparent hover:border-cyber-700'
+                          ? 'bg-cyber-700/50 text-white border border-cyber-600'
+                          : 'bg-cyber-800/30 text-slate-300 border border-transparent hover:border-cyber-700'
                       )}
                     >
                       <status.icon className="h-4 w-4" />
@@ -260,7 +260,7 @@ export default function TrainingPage() {
               </div>
 
               {/* Results Count */}
-              <div className="text-sm text-cyber-500 mb-6">
+              <div className="text-sm text-slate-400 mb-6">
                 Showing {filteredModules.length} of {modules.length} modules
               </div>
 
@@ -278,8 +278,8 @@ export default function TrainingPage() {
                 <div className="space-y-8">
                   {availableModules.length > 0 && (
                     <section>
-                      <h2 className="text-lg font-semibold text-cyber-200 mb-4 flex items-center space-x-2">
-                        <Clock className="h-5 w-5 text-cyber-400" />
+                      <h2 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
+                        <Clock className="h-5 w-5 text-slate-300" />
                         <span>Available ({availableModules.length})</span>
                       </h2>
                       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -296,7 +296,7 @@ export default function TrainingPage() {
 
                   {completedModules.length > 0 && (
                     <section>
-                      <h2 className="text-lg font-semibold text-cyber-200 mb-4 flex items-center space-x-2">
+                      <h2 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
                         <CheckCircle className="h-5 w-5 text-green-400" />
                         <span>Completed ({completedModules.length})</span>
                       </h2>
@@ -314,7 +314,7 @@ export default function TrainingPage() {
 
                   {lockedModules.length > 0 && (
                     <section>
-                      <h2 className="text-lg font-semibold text-cyber-200 mb-4 flex items-center space-x-2">
+                      <h2 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
                         <Lock className="h-5 w-5 text-gray-400" />
                         <span>Locked ({lockedModules.length})</span>
                       </h2>
