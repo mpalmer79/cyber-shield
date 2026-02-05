@@ -81,30 +81,30 @@ function EmailRenderer({ scenario }: { scenario: TrainingScenario }) {
 
   return (
     <div className="cyber-card p-6">
-      <div className="border-b border-cyber-700/50 pb-4 mb-4">
+      <div className="border-b border-white/10 pb-4 mb-4">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center space-x-2">
-            <span className="text-cyber-400 text-sm">From:</span>
-            <span className="text-cyber-200 font-medium">{email.from}</span>
-            <span className="text-cyber-500 text-sm">&lt;{email.fromEmail}&gt;</span>
+            <span className="text-white/60 text-sm">From:</span>
+            <span className="text-white font-medium">{email.from}</span>
+            <span className="text-white/50 text-sm">&lt;{email.fromEmail}&gt;</span>
           </div>
         </div>
         <div className="flex items-center space-x-2 mb-2">
-          <span className="text-cyber-400 text-sm">To:</span>
-          <span className="text-cyber-300">{email.to}</span>
+          <span className="text-white/60 text-sm">To:</span>
+          <span className="text-white/80">{email.to}</span>
         </div>
         <div className="flex items-center space-x-2">
-          <span className="text-cyber-400 text-sm">Subject:</span>
-          <span className="text-cyber-100 font-semibold">{email.subject}</span>
+          <span className="text-white/60 text-sm">Subject:</span>
+          <span className="text-white font-semibold">{email.subject}</span>
         </div>
       </div>
-      <div className="bg-cyber-800/30 rounded-lg p-4">
-        <pre className="whitespace-pre-wrap text-cyber-200 font-sans text-sm leading-relaxed">
+      <div className="bg-white/[0.03] rounded-lg p-4">
+        <pre className="whitespace-pre-wrap text-white/90 font-sans text-sm leading-relaxed">
           {email.body}
         </pre>
         {email.attachments && email.attachments.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-cyber-700/50">
-            <span className="text-cyber-400 text-sm">Attachments: </span>
+          <div className="mt-4 pt-4 border-t border-white/10">
+            <span className="text-white/60 text-sm">Attachments: </span>
             <span className="text-yellow-400 text-sm">{email.attachments.join(', ')}</span>
           </div>
         )}
@@ -119,10 +119,10 @@ function SMSRenderer({ scenario }: { scenario: TrainingScenario }) {
   return (
     <div className="cyber-card p-6">
       <div className="max-w-sm mx-auto">
-        <div className="bg-cyber-800/50 rounded-2xl p-4">
-          <div className="text-center text-cyber-400 text-sm mb-3">{sms.sender}</div>
+        <div className="bg-white/[0.03] rounded-2xl p-4">
+          <div className="text-center text-white/60 text-sm mb-3">{sms.sender}</div>
           <div className="bg-green-600/20 border border-green-500/30 rounded-2xl rounded-tl-sm p-4">
-            <p className="text-cyber-100 text-sm">{sms.message}</p>
+            <p className="text-white text-sm">{sms.message}</p>
           </div>
         </div>
       </div>
@@ -163,8 +163,8 @@ function ConversationRenderer({
 
   return (
     <div className="cyber-card p-6">
-      <div className="bg-cyber-800/30 rounded-lg p-4 mb-4">
-        <p className="text-cyber-300 italic">{contextText}</p>
+      <div className="bg-white/[0.03] rounded-lg p-4 mb-4">
+        <p className="text-white/80 italic">{contextText}</p>
       </div>
       <div className="space-y-3 mb-6">
         {lines.map((line, idx) => (
@@ -172,10 +172,10 @@ function ConversationRenderer({
             "p-3 rounded-lg",
             line.speaker === 'caller' || line.speaker === 'stranger'
               ? "bg-red-500/10 border border-red-500/20 ml-0 mr-12"
-              : "bg-cyber-500/10 border border-cyber-500/20 ml-12 mr-0"
+              : "bg-white/[0.05] border border-white/10 ml-12 mr-0"
           )}>
-            <span className="text-xs text-cyber-400 uppercase mb-1 block">{speakerLabel}</span>
-            <p className="text-cyber-200 text-sm">{line.text}</p>
+            <span className="text-xs text-white/60 uppercase mb-1 block">{speakerLabel}</span>
+            <p className="text-white/90 text-sm">{line.text}</p>
           </div>
         ))}
       </div>
@@ -204,7 +204,7 @@ function URLEvaluationRenderer({
 
   return (
     <div className="cyber-card p-6">
-      <p className="text-cyber-300 mb-6">{content.instruction}</p>
+      <p className="text-white/80 mb-6">{content.instruction}</p>
       <div className="space-y-3">
         {content.urls.map((urlOpt: URLOption) => (
           <button
@@ -218,14 +218,14 @@ function URLEvaluationRenderer({
                   ? "bg-green-500/20 border-2 border-green-500"
                   : selectedAnswer === urlOpt.id
                     ? "bg-red-500/20 border-2 border-red-500"
-                    : "bg-cyber-800/30 border border-cyber-700/50 opacity-50"
+                    : "bg-white/[0.03] border border-white/10 opacity-50"
                 : selectedAnswer === urlOpt.id
                   ? "bg-cyber-600/30 border-2 border-cyber-500"
-                  : "bg-cyber-800/30 border border-cyber-700/50 hover:border-cyber-500/50 hover:bg-cyber-700/30"
+                  : "bg-white/[0.03] border border-white/10 hover:border-white/20 hover:bg-white/[0.05]"
             )}
           >
             <div className="flex items-center justify-between">
-              <span className="text-cyber-200">{urlOpt.url}</span>
+              <span className="text-white/90">{urlOpt.url}</span>
               {showResult && (
                 urlOpt.safe
                   ? <CheckCircle className="h-5 w-5 text-green-400" />
@@ -257,7 +257,7 @@ function PasswordEvaluationRenderer({
 
   return (
     <div className="cyber-card p-6">
-      <p className="text-cyber-300 mb-6">{content.instruction}</p>
+      <p className="text-white/80 mb-6">{content.instruction}</p>
       <div className="space-y-3">
         {content.passwords.map((pwd: PasswordOption) => (
           <button
@@ -271,14 +271,14 @@ function PasswordEvaluationRenderer({
                   ? "bg-green-500/20 border-2 border-green-500"
                   : selectedAnswer === pwd.id
                     ? "bg-red-500/20 border-2 border-red-500"
-                    : "bg-cyber-800/30 border border-cyber-700/50 opacity-50"
+                    : "bg-white/[0.03] border border-white/10 opacity-50"
                 : selectedAnswer === pwd.id
                   ? "bg-cyber-600/30 border-2 border-cyber-500"
-                  : "bg-cyber-800/30 border border-cyber-700/50 hover:border-cyber-500/50 hover:bg-cyber-700/30"
+                  : "bg-white/[0.03] border border-white/10 hover:border-white/20 hover:bg-white/[0.05]"
             )}
           >
             <div className="flex items-center justify-between">
-              <code className="text-cyber-200 bg-cyber-900/50 px-2 py-1 rounded">{pwd.password}</code>
+              <code className="text-white/90 bg-white/[0.05] px-2 py-1 rounded">{pwd.password}</code>
               <span className={cn(
                 "text-xs px-2 py-1 rounded-full",
                 pwd.strength === 'strong' ? "bg-green-500/20 text-green-400" :
@@ -310,8 +310,8 @@ function MultipleChoiceRenderer({
 
   return (
     <div className="cyber-card p-6">
-      <p className="text-cyber-300 mb-4">{content.scenario}</p>
-      <p className="text-cyber-100 font-medium mb-6">{content.question}</p>
+      <p className="text-white/80 mb-4">{content.scenario}</p>
+      <p className="text-white font-medium mb-6">{content.question}</p>
       <OptionsRenderer
         options={content.options}
         onAnswer={onAnswer}
@@ -348,15 +348,15 @@ function OptionsRenderer({
                 ? "bg-green-500/20 border-2 border-green-500"
                 : selectedAnswer === option.id
                   ? "bg-red-500/20 border-2 border-red-500"
-                  : "bg-cyber-800/30 border border-cyber-700/50 opacity-50"
+                  : "bg-white/[0.03] border border-white/10 opacity-50"
               : selectedAnswer === option.id
                 ? "bg-cyber-600/30 border-2 border-cyber-500"
-                : "bg-cyber-800/30 border border-cyber-700/50 hover:border-cyber-500/50 hover:bg-cyber-700/30"
+                : "bg-white/[0.03] border border-white/10 hover:border-white/20 hover:bg-white/[0.05]"
           )}
         >
           <div className="flex items-start space-x-3">
-            <span className="text-cyber-400 font-medium">{option.id.toUpperCase()}.</span>
-            <span className="text-cyber-200">{option.text}</span>
+            <span className="text-white/60 font-medium">{option.id.toUpperCase()}.</span>
+            <span className="text-white/90">{option.text}</span>
             {showResult && option.isCorrect && (
               <CheckCircle className="h-5 w-5 text-green-400 ml-auto flex-shrink-0" />
             )}
@@ -383,16 +383,16 @@ function PhishingJudgmentButtons({
         className="cyber-card p-6 text-center hover:bg-red-500/10 hover:border-red-500/50 transition-all group"
       >
         <AlertTriangle className="h-10 w-10 text-red-400 mx-auto mb-3 group-hover:scale-110 transition-transform" />
-        <span className="text-lg font-semibold text-cyber-100">This is Phishing</span>
-        <p className="text-sm text-cyber-400 mt-1">This looks suspicious</p>
+        <span className="text-lg font-semibold text-white">This is Phishing</span>
+        <p className="text-sm text-white/60 mt-1">This looks suspicious</p>
       </button>
       <button
         onClick={() => onAnswer('legitimate')}
         className="cyber-card p-6 text-center hover:bg-green-500/10 hover:border-green-500/50 transition-all group"
       >
         <CheckCircle className="h-10 w-10 text-green-400 mx-auto mb-3 group-hover:scale-110 transition-transform" />
-        <span className="text-lg font-semibold text-cyber-100">This is Legitimate</span>
-        <p className="text-sm text-cyber-400 mt-1">This looks safe</p>
+        <span className="text-lg font-semibold text-white">This is Legitimate</span>
+        <p className="text-sm text-white/60 mt-1">This looks safe</p>
       </button>
     </div>
   );
@@ -430,13 +430,13 @@ function ResultFeedback({
             </>
           )}
         </div>
-        <p className="text-cyber-200">{scenario.explanation}</p>
+        <p className="text-white/90">{scenario.explanation}</p>
       </div>
 
       {/* Red Flags */}
       {scenario.redFlags.length > 0 && (
         <div className="cyber-card p-6">
-          <h3 className="flex items-center space-x-2 text-lg font-semibold text-cyber-100 mb-4">
+          <h3 className="flex items-center space-x-2 text-lg font-semibold text-white mb-4">
             <AlertTriangle className="h-5 w-5 text-yellow-400" />
             <span>Red Flags to Watch For</span>
           </h3>
@@ -444,7 +444,7 @@ function ResultFeedback({
             {scenario.redFlags.map((flag, idx) => (
               <li key={idx} className="flex items-start space-x-2 text-sm">
                 <span className="text-yellow-400 mt-0.5">•</span>
-                <span className="text-cyber-300">{flag}</span>
+                <span className="text-white/80">{flag}</span>
               </li>
             ))}
           </ul>
@@ -453,7 +453,7 @@ function ResultFeedback({
 
       {/* Learning Points */}
       <div className="cyber-card p-6">
-        <h3 className="flex items-center space-x-2 text-lg font-semibold text-cyber-100 mb-4">
+        <h3 className="flex items-center space-x-2 text-lg font-semibold text-white mb-4">
           <Lightbulb className="h-5 w-5 text-cyan-400" />
           <span>Key Learning Points</span>
         </h3>
@@ -461,7 +461,7 @@ function ResultFeedback({
           {scenario.learningPoints.map((point, idx) => (
             <li key={idx} className="flex items-start space-x-2 text-sm">
               <CheckCircle className="h-4 w-4 text-cyan-400 mt-0.5 flex-shrink-0" />
-              <span className="text-cyber-300">{point}</span>
+              <span className="text-white/80">{point}</span>
             </li>
           ))}
         </ul>
@@ -634,8 +634,8 @@ export default function TrainingModulePage() {
         <Header currentPage="training" />
         <div className="container mx-auto px-4 py-12 text-center">
           <AlertTriangle className="h-12 w-12 text-yellow-400 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-cyber-100 mb-2">Module Not Found</h1>
-          <p className="text-cyber-400 mb-6">The requested training module could not be found.</p>
+          <h1 className="text-2xl font-bold text-white mb-2">Module Not Found</h1>
+          <p className="text-white/60 mb-6">The requested training module could not be found.</p>
           <Link href="/training" className="cyber-button">
             Back to Training
           </Link>
@@ -673,10 +673,10 @@ export default function TrainingModulePage() {
             <div className="absolute inset-0 bg-gradient-to-t from-cyber-950 via-cyber-950/60 to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-6">
               <div className="flex items-center space-x-3 mb-2">
-                <div className="p-2 bg-cyber-800/80 backdrop-blur-sm rounded-lg text-cyber-400">
+                <div className="p-2 bg-cyber-800/80 backdrop-blur-sm rounded-lg text-white/60">
                   {scenarioIconMap[type] || <Shield className="h-6 w-6" />}
                 </div>
-                <span className="text-sm font-medium text-cyber-400 uppercase tracking-wide">
+                <span className="text-sm font-medium text-white/60 uppercase tracking-wide">
                   {type.replace('-', ' ')} Scenario
                 </span>
               </div>
@@ -752,7 +752,7 @@ export default function TrainingModulePage() {
           {/* Back Navigation */}
           <Link
             href="/training"
-            className="inline-flex items-center space-x-2 text-cyber-400 hover:text-cyber-300 mb-6 transition-colors"
+            className="inline-flex items-center space-x-2 text-white/60 hover:text-white/80 mb-6 transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
             <span>Back to Modules</span>
@@ -774,7 +774,7 @@ export default function TrainingModulePage() {
                 <div className="absolute inset-0 bg-gradient-to-t from-cyber-950 via-cyber-950/70 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-8">
                   <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">{module.title}</h1>
-                  <p className="text-cyber-300 max-w-2xl">{module.description}</p>
+                  <p className="text-white/80 max-w-2xl">{module.description}</p>
                 </div>
               </div>
 
@@ -782,31 +782,31 @@ export default function TrainingModulePage() {
                 {/* Stats Grid */}
                 <div className="grid grid-cols-3 gap-4 mb-8">
                   <div className="bg-cyber-800/50 rounded-xl p-5 text-center">
-                    <Target className="h-8 w-8 text-cyber-400 mx-auto mb-2" />
-                    <div className="text-2xl font-bold text-cyber-200">{totalScenarios}</div>
-                    <div className="text-sm text-cyber-500">Scenarios</div>
+                    <Target className="h-8 w-8 text-white/60 mx-auto mb-2" />
+                    <div className="text-2xl font-bold text-white">{totalScenarios}</div>
+                    <div className="text-sm text-white/50">Scenarios</div>
                   </div>
                   <div className="bg-cyber-800/50 rounded-xl p-5 text-center">
                     <Award className="h-8 w-8 text-yellow-400 mx-auto mb-2" />
-                    <div className="text-2xl font-bold text-cyber-200">{module.requiredScore}%</div>
-                    <div className="text-sm text-cyber-500">To Pass</div>
+                    <div className="text-2xl font-bold text-white">{module.requiredScore}%</div>
+                    <div className="text-sm text-white/50">To Pass</div>
                   </div>
                   <div className="bg-cyber-800/50 rounded-xl p-5 text-center">
                     <Clock className="h-8 w-8 text-cyan-400 mx-auto mb-2" />
-                    <div className="text-2xl font-bold text-cyber-200">{module.estimatedMinutes}</div>
-                    <div className="text-sm text-cyber-500">Minutes</div>
+                    <div className="text-2xl font-bold text-white">{module.estimatedMinutes}</div>
+                    <div className="text-sm text-white/50">Minutes</div>
                   </div>
                 </div>
 
                 {/* Skills */}
                 <div className="bg-cyber-800/30 rounded-xl p-6 mb-8">
-                  <h3 className="flex items-center space-x-2 font-semibold text-cyber-200 mb-4">
+                  <h3 className="flex items-center space-x-2 font-semibold text-white mb-4">
                     <Zap className="h-5 w-5 text-yellow-400" />
                     <span>What You&apos;ll Learn</span>
                   </h3>
                   <div className="grid md:grid-cols-2 gap-3">
                     {module.skills.map((skill) => (
-                      <div key={skill} className="flex items-center space-x-2 text-sm text-cyber-400">
+                      <div key={skill} className="flex items-center space-x-2 text-sm text-white/70">
                         <CheckCircle className="h-4 w-4 text-green-400" />
                         <span>{skill}</span>
                       </div>
@@ -835,14 +835,14 @@ export default function TrainingModulePage() {
               {/* Progress Bar */}
               <div className="cyber-card p-4 mb-6">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm text-cyber-400">
+                  <span className="text-sm text-white/60">
                     Scenario {scenarioIndex + 1} of {totalScenarios}
                   </span>
                   <div className="flex items-center space-x-4">
                     <span className="text-sm text-green-400">
                       {correctAnswers} correct
                     </span>
-                    <span className="text-sm text-cyber-300 font-medium">
+                    <span className="text-sm text-white/80 font-medium">
                       {Math.round(((scenarioIndex + (showResult ? 1 : 0)) / totalScenarios) * 100)}% complete
                     </span>
                   </div>
