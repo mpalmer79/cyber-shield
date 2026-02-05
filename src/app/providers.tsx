@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { ThemeProvider, ToastContainer, Onboarding, useOnboarding } from '@/components/ui';
+import DemoBanner from '@/components/DemoBanner';
 
 function OnboardingWrapper({ children }: { children: React.ReactNode }) {
   const { showOnboarding, completeOnboarding } = useOnboarding();
@@ -33,6 +34,7 @@ export function ClientProviders({ children }: { children: React.ReactNode }) {
 
   return (
     <ThemeProvider>
+      <DemoBanner />
       <OnboardingWrapper>
         {children}
       </OnboardingWrapper>
