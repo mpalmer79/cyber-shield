@@ -453,7 +453,7 @@ function WatermarkCard({
           src={imageUrl}
           alt=""
           fill
-          className="object-cover opacity-[0.18]"
+          className="object-cover opacity-[0.35]"
           sizes="400px"
         />
       </div>
@@ -628,7 +628,7 @@ export default function DailyChallengePage() {
                 <h1 className="text-3xl md:text-4xl font-bold text-white mb-3 tracking-tight">
                   Daily Challenge
                 </h1>
-                <p className="text-gray-400 text-sm leading-relaxed max-w-md">
+                <p className="text-white/80 text-sm leading-relaxed max-w-md">
                   One scenario per day. Stay sharp, build your streak, earn badges. Takes under 60 seconds.
                 </p>
 
@@ -637,20 +637,20 @@ export default function DailyChallengePage() {
                   <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20">
                     <Flame className={cn(
                       "h-4 w-4",
-                      currentStreak >= 3 ? "text-orange-400" : currentStreak >= 1 ? "text-orange-300" : "text-gray-600"
+                      currentStreak >= 3 ? "text-orange-400" : currentStreak >= 1 ? "text-orange-300" : "text-white/40"
                     )} />
                     <span className="text-sm font-bold text-white">{currentStreak}</span>
-                    <span className="text-xs text-gray-500">streak</span>
+                    <span className="text-xs text-white/60">streak</span>
                   </div>
                   <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
                     <Trophy className="h-4 w-4 text-amber-400" />
                     <span className="text-sm font-bold text-white">{longestStreak}</span>
-                    <span className="text-xs text-gray-500">best</span>
+                    <span className="text-xs text-white/60">best</span>
                   </div>
                   <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
                     <Target className="h-4 w-4 text-blue-400" />
                     <span className="text-sm font-bold text-white">{totalChallengesCompleted}</span>
-                    <span className="text-xs text-gray-500">total</span>
+                    <span className="text-xs text-white/60">total</span>
                   </div>
                 </div>
               </div>
@@ -701,7 +701,7 @@ export default function DailyChallengePage() {
               <div className="flex items-center space-x-3 mb-6">
                 <div className="flex items-center space-x-2 px-3 py-1.5 bg-white/5 rounded-full border border-white/10">
                   {moduleIcons[scenario.moduleType] || <Globe className="h-5 w-5" />}
-                  <span className="text-sm text-gray-300">{moduleLabels[scenario.moduleType] || scenario.moduleType}</span>
+                  <span className="text-sm text-white/90">{moduleLabels[scenario.moduleType] || scenario.moduleType}</span>
                 </div>
                 <div className={cn(
                   "px-3 py-1.5 rounded-full text-xs font-medium",
@@ -788,12 +788,12 @@ export default function DailyChallengePage() {
                       )}>
                         {todayResult ? 'Correct!' : 'Not Quite'}
                       </h3>
-                      <p className="text-gray-300 mb-4">{scenario.explanation}</p>
+                      <p className="text-white/90 mb-4">{scenario.explanation}</p>
 
                       {/* Red Flags */}
                       {scenario.redFlags.length > 0 && (
                         <div className="mb-4">
-                          <h4 className="text-sm font-semibold text-gray-300 mb-2 flex items-center space-x-2">
+                          <h4 className="text-sm font-semibold text-white/90 mb-2 flex items-center space-x-2">
                             <AlertTriangle className="h-4 w-4 text-amber-400" />
                             <span>Red Flags to Watch For</span>
                           </h4>
@@ -810,14 +810,14 @@ export default function DailyChallengePage() {
                       {/* Learning Points */}
                       {scenario.learningPoints.length > 0 && (
                         <div className="mb-4">
-                          <h4 className="text-sm font-semibold text-gray-300 mb-2 flex items-center space-x-2">
+                          <h4 className="text-sm font-semibold text-white/90 mb-2 flex items-center space-x-2">
                             <Lightbulb className="h-4 w-4 text-blue-400" />
                             <span>Key Takeaways</span>
                           </h4>
                           <ul className="space-y-1">
                             {scenario.learningPoints.map((pt, i) => (
-                              <li key={i} className="text-sm text-gray-400 flex items-start space-x-2">
-                                <ChevronRight className="h-4 w-4 text-gray-600 flex-shrink-0 mt-0.5" />
+                              <li key={i} className="text-sm text-white/80 flex items-start space-x-2">
+                                <ChevronRight className="h-4 w-4 text-white/50 flex-shrink-0 mt-0.5" />
                                 <span>{pt}</span>
                               </li>
                             ))}
@@ -852,7 +852,7 @@ export default function DailyChallengePage() {
                     </Link>
                     <Link
                       href="/progress"
-                      className="flex items-center justify-center space-x-2 px-6 py-3 bg-white/5 hover:bg-white/10 text-gray-300 font-medium rounded-xl transition-colors border border-white/10"
+                      className="flex items-center justify-center space-x-2 px-6 py-3 bg-white/5 hover:bg-white/10 text-white/90 font-medium rounded-xl transition-colors border border-white/10"
                     >
                       <TrendingUp className="h-4 w-4" />
                       <span>View Progress</span>
@@ -870,8 +870,8 @@ export default function DailyChallengePage() {
               {/* 30-Day Accuracy */}
               <WatermarkCard
                 imageUrl={dailyImages.accuracy}
-                overlayFrom="from-[#0c1222]/95"
-                overlayTo="to-[#111827]/90"
+                overlayFrom="from-[#0c1222]/80"
+                overlayTo="to-[#111827]/70"
               >
                 <div className="p-6">
                   <h3 className="text-lg font-semibold text-white mb-4">
@@ -896,7 +896,7 @@ export default function DailyChallengePage() {
                       </svg>
                       <div className="absolute inset-0 flex flex-col items-center justify-center">
                         <span className="text-3xl font-bold text-white">{accuracy}%</span>
-                        <span className="text-xs text-gray-500">{recentCorrect}/{recentTotal}</span>
+                        <span className="text-xs text-white/70">{recentCorrect}/{recentTotal}</span>
                       </div>
                     </div>
                   </div>
@@ -906,8 +906,8 @@ export default function DailyChallengePage() {
               {/* Streak Badges */}
               <WatermarkCard
                 imageUrl={dailyImages.badges}
-                overlayFrom="from-[#120c1c]/95"
-                overlayTo="to-[#1a1025]/90"
+                overlayFrom="from-[#120c1c]/80"
+                overlayTo="to-[#1a1025]/70"
               >
                 <div className="p-6">
                   <h3 className="text-lg font-semibold text-white mb-4">
@@ -928,18 +928,18 @@ export default function DailyChallengePage() {
                           "flex items-center justify-center w-10 h-10 rounded-full",
                           badge.earned
                             ? `bg-white/[0.06] ${badge.color}`
-                            : "bg-white/[0.03] text-gray-700"
+                            : "bg-white/[0.03] text-white/40"
                         )}>
                           {badge.icon}
                         </div>
                         <div className="flex-1">
                           <span className={cn(
                             "font-medium block",
-                            badge.earned ? "text-white" : "text-gray-600"
+                            badge.earned ? "text-white" : "text-white/50"
                           )}>
                             {badge.label}
                           </span>
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-white/60">
                             {badge.requiredStreak}-day streak
                           </span>
                         </div>
@@ -955,14 +955,14 @@ export default function DailyChallengePage() {
               {/* Tips */}
               <WatermarkCard
                 imageUrl={dailyImages.tips}
-                overlayFrom="from-[#0c1a1c]/95"
-                overlayTo="to-[#0f1720]/90"
+                overlayFrom="from-[#0c1a1c]/80"
+                overlayTo="to-[#0f1720]/70"
               >
                 <div className="p-6">
                   <h3 className="text-lg font-semibold text-white mb-3">
                     Streak Tips
                   </h3>
-                  <ul className="space-y-2.5 text-sm text-gray-400">
+                  <ul className="space-y-2.5 text-sm text-white/80">
                     <li className="flex items-start space-x-2.5">
                       <Flame className="h-4 w-4 text-orange-400 flex-shrink-0 mt-0.5" />
                       <span>Complete one challenge daily to keep your streak alive</span>
